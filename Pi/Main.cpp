@@ -6,16 +6,11 @@
 class IrcMessageReceiver : private IrcClientObserver
 {
    public:
-      IrcMessageReceiver()
+      IrcMessageReceiver(const char * password) : robotSerialPort(-1)
       {
-         robotSerialPort = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
-         if(robotSerialPort == -1)
-            throw "Failed to connect to robot";
-
-         fcntl(robotSerialPort, F_SETFL, 0);
+         ConnectToRobot("/dev/ttyUSB0");
 
          const auto username = "aylobot";
-         const auto password = "oauth:3bwz4p1nvygf100iwcm1pdl4qyhjwhh";
          const auto channel  = "#aylojill";
 
          IrcClient client("irc.twitch.tv", 6667, username, password, this);
@@ -24,6 +19,12 @@ class IrcMessageReceiver : private IrcClientObserver
       }
 
    private:
+      void IrcNumeric(uint32_t numeric)
+      {
+         if(numeric == 1)
+            std::cout << "Connected to Twitch." << std::endl;
+      }
+
       void IrcNotice(const std::string & notice)
       {
          if(notice == "Login unsuccessful") // This is what Twitch says when if login fails. It may change in the future.
@@ -60,6 +61,17 @@ class IrcMessageReceiver : private IrcClientObserver
          std::cout << "Message from: " << from << " to " << to << ": " << message << std::endl;
       }
 
+      void ConnectToRobot(const char * port)
+      {
+         robotSerialPort = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
+         if(robotSerialPort == -1)
+            throw "Failed to connect to robot";
+
+         fcntl(robotSerialPort, F_SETFL, 0);
+
+         std::cout << "Connected to robot.";
+      }
+
       void SendToRobot(const std::string & str)
       {
          const auto nBytesWritten = write(robotSerialPort, str.c_str(), str.length());
@@ -70,22 +82,31 @@ class IrcMessageReceiver : private IrcClientObserver
       int robotSerialPort;
 };
 
-int main()
+int main(int argc, char ** argv)
 {
+   if(argc < 2)
+   {
+      std::cout << "Usage: <program name> <password>" << std::endl;
+      return 1;
+   }
+
    try
    {
-      IrcMessageReceiver receiver;
+      IrcMessageReceiver receiver(argv[1]);
    }
    catch(const char * errorMessage)
    {
       std::cout << errorMessage << std::endl;
+      return 1;
    }
    catch(std::bad_alloc &)
    {
       std::cout << "Out of memory." << std::endl;
+      return 1;
    }
    catch(...)
    {
       std::cout << "Unknown error." << std::endl;
+      return 1;
    }
 }

@@ -2,7 +2,6 @@
 #define IrcClient_h
 
 #include "SimpleTcpConnection.h"
-#include <iostream>
 #include <string>
 #include <vector>
 #include <utility>
@@ -13,8 +12,9 @@
 class IrcClientObserver
 {
    public:
-      virtual void IrcMessage(const std::string & from, const std::string & to, const std::string & message) { };
-      virtual void IrcNotice(const std::string & notice) { };
+      virtual void IrcNumeric(uint32_t numeric) { }
+      virtual void IrcMessage(const std::string & from, const std::string & to, const std::string & message) { }
+      virtual void IrcNotice(const std::string & notice) { }
 };
 
 class IrcClient
@@ -22,7 +22,7 @@ class IrcClient
    public:
       IrcClient(const char * server, uint16_t port, const char * nickname, const char * password, IrcClientObserver * observer) : observer(observer),
                                                                                                                                   connection(server, port),
-                                                                                                                                  bufferSize(3),
+                                                                                                                                  bufferSize(256 * 1024),
                                                                                                                                   buffer(new char[bufferSize]),
                                                                                                                                   bufferBegin(0),
                                                                                                                                   bufferEnd(0)
@@ -55,10 +55,9 @@ class IrcClient
 
             if(message.command == "PING")
             {
-               const auto response = std::string() + "PONG " + message.parameters;
+               const auto response = std::string() + "PONG " + message.parameters + "\r\n";
 
                connection.Send(response);
-               std::cout << "--- PING response ---:%s\n" << response; // Only for testing...
             }
 
             else if(message.command == "PRIVMSG")
@@ -79,6 +78,14 @@ class IrcClient
                GetToken(message.parameters, noticeStart, ":");
                const auto notice = &message.parameters[noticeStart];
                observer->IrcNotice(notice);
+            }
+
+            else if(message.command.length() == 3 &&
+                    std::isdigit(message.command[0]) &&
+                    std::isdigit(message.command[1]) &&
+                    std::isdigit(message.command[2]))
+            {
+               observer->IrcNumeric(atoi(message.command.c_str()));
             }
          }
       }
@@ -115,7 +122,6 @@ class IrcClient
 
             line += c;
          }
-
 
          return std::move(line);
       }
