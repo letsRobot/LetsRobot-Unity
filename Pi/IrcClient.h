@@ -56,7 +56,6 @@ class IrcClient
             if(message.command == "PING")
             {
                const auto response = std::string() + "PONG " + message.parameters + "\r\n";
-
                connection.Send(response);
             }
 
@@ -150,14 +149,20 @@ class IrcClient
          const auto messageDelimiters = " \r";
          const auto strMessage = ReadLine();
 
-         if(strMessage.length() == 0 || strMessage[0] != ':') // Ignore zero length messages and messages without prefix
+         if(strMessage.length() == 0)
             return false;
 
-         size_t position = 1;
+         size_t position = 0;
+         std::string prefix;
 
-         const auto prefix = GetToken(strMessage, position, messageDelimiters);
-         if(prefix == "")
-            return false;
+         const bool messageHasPrefix = strMessage[0] == ':';
+         if(messageHasPrefix)
+         {
+            position = 1; // Skip ':'
+            prefix = GetToken(strMessage, position, messageDelimiters);
+            if(prefix == "")
+               return false;
+         }
 
          const auto command = GetToken(strMessage, position, messageDelimiters);
          if(command == "")
