@@ -69,7 +69,7 @@ class IrcMessageReceiver : private IrcClientObserver
 
          fcntl(robotSerialPort, F_SETFL, 0);
 
-         std::cout << "Connected to robot.";
+         std::cout << "Connected to robot." << std::endl;
       }
 
       void SendToRobot(const std::string & str)
