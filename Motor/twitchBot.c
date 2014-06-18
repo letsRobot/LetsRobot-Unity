@@ -5,6 +5,7 @@
 #include "simpletools.h"
 #include "fdserial.h"
 #include "abdrive.h"
+#include "ping.h"
 
 fdserial *term; //enables full-duplex serilization of the terminal (In otherwise, 2 way signals between this computer and the robot)
 int ticks = 12; //each tick makes the wheel move by 3.25mm, 64 ticks is a full wheel rotation (or 208mm)
@@ -13,6 +14,8 @@ int maxSpeed = 128; //the maximum amount of ticks the robot can travel with the 
 int minSpeed = 2; //the lowest amount of ticks the robot can travel with the "drive_goto" function
 int maxTurnSpeed = 64;
 int minTurnSpeed = 2;
+
+int pingDistance;
 
 int main()
 {
@@ -99,6 +102,12 @@ int main()
           turnTick = minTurnSpeed;
           }
         dprint(term, "Robot will now turn at %d ticks per second. \n", turnTick);
+      }
+
+      else if (c == 'p') //ping distance
+      {
+        pingDistance = ping(8);
+        dprint(term, "Echo Time = %d%c Micro Seconds.\n", pingDistance, CLREOL);
       }
 
     } // End of Read Character Function
