@@ -89,6 +89,12 @@ class IrcClient
          }
       }
 
+      void SendMessage(const char * to, const char * message)
+      {
+         const auto sendCommand = std::string("PRIVMSG ") + to + " " + message + "\r\n";
+         connection.Send(sendCommand);
+      }
+
    private:
       struct Message
       {

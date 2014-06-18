@@ -2,18 +2,17 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <iostream>
+#include <sstream>
 
 class IrcMessageReceiver : private IrcClientObserver
 {
    public:
-      IrcMessageReceiver(const char * password) : robotSerialPort(-1)
+      IrcMessageReceiver(const char * password) : robotSerialPort(-1),
+                                                  client("irc.twitch.tv", 6667, "aylobot", password, this),
+                                                  channel("#aylojill")
       {
          ConnectToRobot("/dev/ttyUSB0");
 
-         const auto username = "aylobot";
-         const auto channel  = "#aylojill";
-
-         IrcClient client("irc.twitch.tv", 6667, username, password, this);
          client.JoinChannel(channel);
          client.ReceiveMessages();
       }
@@ -27,7 +26,7 @@ class IrcMessageReceiver : private IrcClientObserver
 
       void IrcNotice(const std::string & notice)
       {
-         if(notice == "Login unsuccessful") // This is what Twitch says when if login fails. It may change in the future.
+         if(notice == "Login unsuccessful") // This is what Twitch says if the login fails. It may change in the future.
             throw "Failed to login.";
       };
 
@@ -58,6 +57,26 @@ class IrcMessageReceiver : private IrcClientObserver
          else if(message == "right")
             SendToRobot("r");
 
+         else if(message == "echo")
+         {
+            SendToRobot("p");
+
+            std::stringstream robotResponse(ReceiveFromRobot());
+            std::string echo;
+            int timeInMs;
+            robotResponse >> echo;
+            robotResponse >> timeInMs;
+
+            if(echo != "echo")
+               throw "Robot should have responded with \"echo\".";
+
+            const int distance = (0.03448 * timeInMs) / 2 + 0.5;
+
+            std::stringstream message;
+            message << "Distance is " << distance << " cm.";
+            client.SendMessage(channel, message.str().c_str());
+         }
+
          std::cout << "Message from: " << from << " to " << to << ": " << message << std::endl;
       }
 
@@ -79,7 +98,18 @@ class IrcMessageReceiver : private IrcClientObserver
             throw "Failed to send to robot.";
       }
 
+      std::string ReceiveFromRobot()
+      {
+         const auto bufferSize = 512;
+         char buffer[bufferSize];
+         const auto nBytesRead = read(robotSerialPort, buffer, bufferSize);
+
+         return std::string(bufferSize, nBytesRead);
+      }
+
       int robotSerialPort;
+      IrcClient client;
+      const char * channel;
 };
 
 int main(int argc, char ** argv)
