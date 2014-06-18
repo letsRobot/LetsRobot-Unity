@@ -43,34 +43,30 @@ int main()
       //Link key presses to directional commands, and print the command to strings
       if (c == 'f') //press "f" fof forward
       {           
-        dprint(term, "Foward, \n");
         drive_goto(ticks, ticks);
       } 
       else if (c == 'b') //press "b" for backward
       { 
-        dprint(term, "Backward, \n");
         drive_goto(-ticks, -ticks);
       } 
       else if (c == 'r') //press "r" for right turn
       { 
-        dprint(term, "Right, \n");
         drive_goto(turnTick, -turnTick);
       } 
       else if (c == 'l') //press "l" for left turn
       { 
-        dprint(term, "Left, \n");
         drive_goto(-turnTick, turnTick);
       } 
 
       //Increasing and Decreasing Drive Speed
       else if (c == 'u') 
       {
-        ticks = ticks +2;
+        ticks = ticks + 2;
         if (ticks > maxSpeed) //clamp speed so it can't go over the maximum speed
         {
            ticks = maxSpeed;
         }
-        dprint(term, "Robot will now move %d ticks per second. \n", ticks);
+        dprint(term, "move_speed %d\n", ticks);
       } 
       else if (c == 'd') 
       {
@@ -79,35 +75,35 @@ int main()
         {
           ticks = minSpeed;
         }
-        dprint(term, "Robot will now move %d ticks per second. \n", ticks);
+        dprint(term, "move_speed %d\n", ticks);
       }
 
       //Increase Turn Speed;
       else if (c == 't') 
       {
-        turnTick = turnTick +1;
+        turnTick = turnTick + 1;
         if (turnTick > maxTurnSpeed)
         {
           turnTick = maxTurnSpeed;
         }
-        dprint(term, "Robot will now turn at %d ticks per second. \n", turnTick);  
+        dprint(term, "turn_speed %d\n", ticks);
       }
       
       //decrease turn speed
       else if (c == 'n')
       {
-        turnTick = turnTick -1;
+        turnTick = turnTick - 1;
         if (turnTick < minTurnSpeed)
           {
           turnTick = minTurnSpeed;
           }
-        dprint(term, "Robot will now turn at %d ticks per second. \n", turnTick);
+        dprint(term, "turn_speed %d\n", ticks);
       }
 
       else if (c == 'p') //ping distance
       {
         pingDistance = ping(8);
-        dprint(term, "Echo Time = %d%c Micro Seconds.\n", pingDistance, CLREOL);
+        dprint(term, "echo &d\n", pingDistance);
       }
 
     } // End of Read Character Function
