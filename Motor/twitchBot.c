@@ -86,7 +86,7 @@ int main()
         {
           turnTick = maxTurnSpeed;
         }
-        dprint(term, "turn_speed %d\n", ticks);
+        dprint(term, "turn_speed %d\n", turnTick);
       }
       
       //decrease turn speed
@@ -97,7 +97,7 @@ int main()
           {
           turnTick = minTurnSpeed;
           }
-        dprint(term, "turn_speed %d\n", ticks);
+        dprint(term, "turn_speed %d\n", turnTick);
       }
 
       else if (c == 'p') //ping distance
