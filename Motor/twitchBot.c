@@ -24,12 +24,6 @@ int main()
   //set full-duplex serialization for the terminal
   term = fdserial_open(31, 30, 0, 115200);
 
-  //I'm not to sure what writeChar does, seems to get to text onto the console
-  //dprint is the Parallax version of fprint used for their microcontrollers
-  writeChar(term, CLS);
-  dprint(term, "Click this terminal, \n");
-  dprint(term, "and type on keyboard...\n\n");
-
   char c;
 
   while (1)
@@ -103,7 +97,7 @@ int main()
       else if (c == 'p') //ping distance
       {
         pingDistance = ping(8);
-        dprint(term, "echo &d\n", pingDistance);
+        dprint(term, "echo %d\n", pingDistance);
       }
 
     } // End of Read Character Function

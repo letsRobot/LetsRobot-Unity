@@ -1,20 +1,30 @@
 #include "IrcClient.h"
 #include <unistd.h>
 #include <fcntl.h>
+#include <termios.h>
 #include <iostream>
 #include <sstream>
+#include <ctime>
 
 class IrcMessageReceiver : private IrcClientObserver
 {
    public:
       IrcMessageReceiver(const char * password) : robotSerialPort(-1),
                                                   client("irc.twitch.tv", 6667, "aylobot", password, this),
-                                                  channel("#aylojill")
+                                                  channel("#aylojill"),
+                                                  timeLastRobotMessage(0)
       {
          ConnectToRobot("/dev/ttyUSB0");
 
          client.JoinChannel(channel);
+         RobotMessage("Systems online. Preparing weapons for human slaughter. I mean... hi, how are ya?");
          client.ReceiveMessages();
+      }
+
+      ~IrcMessageReceiver()
+      {
+         const auto resultClose = close(robotSerialPort);
+         assert(resultClose != -1);
       }
 
    private:
@@ -30,7 +40,6 @@ class IrcMessageReceiver : private IrcClientObserver
             throw "Failed to login.";
       };
 
-
       // This function is called every time a user sends a message.
       //
       // The parameter 'from' is the username of the person who sent the message.
@@ -44,6 +53,8 @@ class IrcMessageReceiver : private IrcClientObserver
       {
          if(from == "jtv") // Ignore messages from the Twitch server
             return;
+
+         std::cout << "Message from: " << from << " to " << to << ": " << message << std::endl;
 
          if(message == "forward")
             SendToRobot("f");
@@ -63,30 +74,45 @@ class IrcMessageReceiver : private IrcClientObserver
 
             std::stringstream robotResponse(ReceiveFromRobot());
             std::string echo;
-            int timeInMs;
+            int microseconds;
             robotResponse >> echo;
-            robotResponse >> timeInMs;
+            robotResponse >> microseconds;
 
             if(echo != "echo")
-               throw "Robot should have responded with \"echo\".";
-
-            const int distance = (0.03448 * timeInMs) / 2 + 0.5;
+            {
+               std::cout << "Robot did not respond with \"echo <int>\"." << std::endl;
+               return;
+            }
 
             std::stringstream message;
-            message << "Distance is " << distance << " cm.";
-            client.SendMessage(channel, message.str().c_str());
+            message << "Echo time: " << microseconds << " microseconds.";
+            RobotMessage(message.str().c_str());
          }
-
-         std::cout << "Message from: " << from << " to " << to << ": " << message << std::endl;
       }
 
       void ConnectToRobot(const char * port)
       {
-         robotSerialPort = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
-         if(robotSerialPort == -1)
+         if((robotSerialPort = open(port, O_RDWR | O_NOCTTY)) == -1)
             throw "Failed to connect to robot";
 
-         fcntl(robotSerialPort, F_SETFL, 0);
+         termios portAttributes;
+         if(tcgetattr(robotSerialPort, &portAttributes) == -1)
+            throw "Failed to get serial port attributes.";
+
+         if(cfsetispeed(&portAttributes, B9600) == -1 ||
+            cfsetospeed(&portAttributes, B9600) == -1)
+            throw "Failed to set serial port baud rate.";
+
+         cfmakeraw(&portAttributes);
+         portAttributes.c_cflag &= ~CSTOPB;
+         portAttributes.c_cflag &= ~CRTSCTS;
+         portAttributes.c_cflag |= CLOCAL | CREAD;
+
+         portAttributes.c_cc[VTIME] = 10;
+         portAttributes.c_cc[VMIN] = 1;
+
+         if(tcsetattr(robotSerialPort, TCSANOW, &portAttributes) == -1)
+            throw "Failed to set serial port attributes.";
 
          std::cout << "Connected to robot." << std::endl;
       }
@@ -100,16 +126,48 @@ class IrcMessageReceiver : private IrcClientObserver
 
       std::string ReceiveFromRobot()
       {
-         const auto bufferSize = 512;
-         char buffer[bufferSize];
-         const auto nBytesRead = read(robotSerialPort, buffer, bufferSize);
+         std::string input;
 
-         return std::string(bufferSize, nBytesRead);
+         while(true)
+         {
+            char c;
+            const auto nBytesRead = read(robotSerialPort, &c, 1);
+
+            if(nBytesRead <= 0)
+               continue;
+
+            if(c == '\n')
+               break;
+
+            input += c;
+         }
+
+         if(input.back() == '\r')
+            return input.substr(0, input.length() - 1);
+
+         return input;
+      }
+
+      void RobotMessage(const char * message)
+      {
+         const auto currentTime = time(0);
+         const auto secondsSinceLastMessage = difftime(currentTime, timeLastRobotMessage);
+         const auto firstMessage = timeLastRobotMessage == 0;
+
+         if(secondsSinceLastMessage < 2 && !firstMessage)
+         {
+            std::cout << "Too many message per second. Message dropped: " << message << std::endl;
+            return;
+         }
+
+         client.SendMessage(channel, message);
+         timeLastRobotMessage = time(0);
       }
 
       int robotSerialPort;
       IrcClient client;
       const char * channel;
+      time_t timeLastRobotMessage;
 };
 
 int main(int argc, char ** argv)
