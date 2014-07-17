@@ -24,7 +24,7 @@ class IrcClient
                                                                                                                                   connection(server, port),
                                                                                                                                   bufferSize(256 * 1024),
                                                                                                                                   buffer(new char[bufferSize]),
-                                                                                                                                  bufferBegin(0),
+                                                                                                                                  iBuffer(0),
                                                                                                                                   bufferEnd(0)
       {
          assert(server);
@@ -91,7 +91,7 @@ class IrcClient
 
       void SendMessage(const char * to, const char * message)
       {
-         const auto sendCommand = std::string("PRIVMSG ") + to + " " + message + "\r\n";
+         const auto sendCommand = std::string("PRIVMSG ") + to + " :" + message + "\r\n";
          connection.Send(sendCommand);
       }
 
@@ -112,10 +112,8 @@ class IrcClient
 
       std::string ReadLine()
       {
-         FillInputBuffer();
-
          std::string line;
-         while(bufferBegin != bufferEnd)
+         while(true)
          {
             const auto c = ReadChar();
 
@@ -133,21 +131,14 @@ class IrcClient
 
       char ReadChar()
       {
-         const auto c = buffer[bufferBegin];
-         bufferBegin++;
-         FillInputBuffer();
+         if(iBuffer == bufferEnd)
+         {
+            bufferEnd = connection.Receive(buffer.get(), bufferSize);
+            iBuffer = 0;
+         }
 
-         return c;
-      }
+         return buffer[iBuffer++];
 
-      void FillInputBuffer()
-      {
-         if(bufferBegin != bufferEnd)
-            return;
-
-         bufferEnd = connection.Receive(buffer.get(), bufferSize);
-         bufferBegin = 0;
-         buffer.get()[bufferEnd] = 0;
       }
 
       bool ReadMessage(Message & message)
@@ -208,7 +199,7 @@ class IrcClient
       SimpleTcpConnection connection;
       const size_t bufferSize;
       std::unique_ptr<char[]> buffer;
-      size_t bufferBegin;
+      size_t iBuffer;
       size_t bufferEnd;
 };
 

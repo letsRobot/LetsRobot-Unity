@@ -31,7 +31,10 @@ class IrcMessageReceiver : private IrcClientObserver
       void IrcNumeric(uint32_t numeric)
       {
          if(numeric == 1)
+         {
+            RobotMessage("Hi, I'm a robot. No, really.");
             std::cout << "Connected to Twitch." << std::endl;
+         }
       }
 
       void IrcNotice(const std::string & notice)
@@ -105,10 +108,10 @@ class IrcMessageReceiver : private IrcClientObserver
 
          cfmakeraw(&portAttributes);
          portAttributes.c_cflag &= ~CSTOPB;
-         portAttributes.c_cflag &= ~CRTSCTS;
+//         portAttributes.c_cflag &= ~CRTSCTS;
          portAttributes.c_cflag |= CLOCAL | CREAD;
 
-         portAttributes.c_cc[VTIME] = 10;
+         portAttributes.c_cc[VTIME] = 1;
          portAttributes.c_cc[VMIN] = 1;
 
          if(tcsetattr(robotSerialPort, TCSANOW, &portAttributes) == -1)
@@ -156,7 +159,7 @@ class IrcMessageReceiver : private IrcClientObserver
 
          if(secondsSinceLastMessage < 2 && !firstMessage)
          {
-            std::cout << "Too many message per second. Message dropped: " << message << std::endl;
+            std::cout << "Too many message per second. Message dropped: \"" << message << "\"" << std::endl;
             return;
          }
 

@@ -7,6 +7,7 @@
 #include <string>
 #include <stdio.h>
 #include <cstdint>
+#include <iostream>
 #include <cassert>
 
 class SimpleTcpConnection
@@ -66,6 +67,8 @@ class SimpleTcpConnection
 
          if(nBytesReceived < 0)
             throw "Failed to receive data.";
+         if(nBytesReceived == 0)
+            throw "Failed to receive data. Connection was closed.";
 
          return nBytesReceived;
       }
