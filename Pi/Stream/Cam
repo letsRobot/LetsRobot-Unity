@@ -1,0 +1,12 @@
+#!/bin/bash
+
+while true
+do
+   if [ ! -d "/dev/shm/mjpeg" ]; then
+      mkdir "/dev/shm/mjpeg"
+   fi
+
+   sudo raspimjpeg
+   sleep 1
+done
+
