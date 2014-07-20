@@ -1,11 +1,12 @@
 /**
  * This is the main twitchBot program file.
  */
-
 #include "simpletools.h"
 #include "fdserial.h"
 #include "abdrive.h"
 #include "ping.h"
+
+void Drive(int leftTicks, int rightTicks, int speed);
 
 fdserial *term; //enables full-duplex serilization of the terminal (In otherwise, 2 way signals between this computer and the robot)
 int ticks = 12; //each tick makes the wheel move by 3.25mm, 64 ticks is a full wheel rotation (or 208mm)
@@ -37,19 +38,19 @@ int main()
       //Link key presses to directional commands, and print the command to strings
       if (c == 'f') //press "f" fof forward
       {           
-        drive_goto(ticks, ticks);
+        Drive(ticks, ticks, maxSpeed);
       } 
       else if (c == 'b') //press "b" for backward
       { 
-        drive_goto(-ticks, -ticks);
+        Drive(-ticks, -ticks, maxSpeed);
       } 
       else if (c == 'r') //press "r" for right turn
       { 
-        drive_goto(turnTick, -turnTick);
+        Drive(turnTick, -turnTick, maxTurnSpeed);
       } 
       else if (c == 'l') //press "l" for left turn
       { 
-        drive_goto(-turnTick, turnTick);
+        Drive(-turnTick, turnTick, maxTurnSpeed);
       } 
 
       //Increasing and Decreasing Drive Speed
@@ -100,7 +101,93 @@ int main()
         dprint(term, "echo %d\n", pingDistance);
       }
 
+      else if (c == 'k') // poke
+      {
+      }
     } // End of Read Character Function
   } // End of While Loop
 } //End of Main Loop
 
+void Drive(int leftTicks, int rightTicks, int speed)
+{
+  // Tick count when we started
+  int startLeftTicks;
+  int startRightTicks;
+  drive_getTicks(&startLeftTicks, &startRightTicks);
+
+  // Target tick counts
+  const int leftTargetTicks  = startLeftTicks  + leftTicks;
+  const int rightTargetTicks = startRightTicks + rightTicks;
+
+  // Acceleration
+  const int speedStep = 4; // Acceleration per 1/20th of a second
+  int currentSpeed = 0;
+
+  int destinationReached = 0;
+
+  int leftOldTicks;
+  int rightOldTicks;
+  drive_getTicks(&leftOldTicks, &rightOldTicks);
+
+  int stuck = 0;
+  const int maxTimesStuck = 10; // This is the number of times the robot has to think it's stuck before it stops
+
+  do
+  {
+    // Accelerate
+    currentSpeed += speedStep;
+    if(currentSpeed > speed)
+      currentSpeed = speed;
+
+    const int leftCurrentSpeed  = leftTicks  >= 0 ? currentSpeed : -currentSpeed;
+    const int rightCurrentSpeed = rightTicks >= 0 ? currentSpeed : -currentSpeed;
+    drive_speed(leftCurrentSpeed, rightCurrentSpeed);
+
+    pause(50);
+
+    // Current tick count
+    int leftCurrentTicks;
+    int rightCurrentTicks;
+    drive_getTicks(&leftCurrentTicks, &rightCurrentTicks);
+
+    // Check if we're stuck
+    if(leftOldTicks  == leftCurrentTicks ||
+       rightOldTicks == rightCurrentTicks)
+      stuck++;
+    else
+    {
+//      dprint(term, "stuck: %d\n", stuck);/**/
+      stuck = 0;
+    }
+
+    if(stuck > maxTimesStuck)
+    {
+//      dprint(term, "Oh God, I really am stuck!!!\n");/**/
+      drive_speed(0, 0);
+      return;
+    }
+
+    leftOldTicks = leftCurrentTicks;
+    rightOldTicks = rightCurrentTicks;
+
+    destinationReached = (leftTicks  >= 0 && leftCurrentTicks  >= leftTargetTicks)  ||
+                         (leftTicks  <= 0 && leftCurrentTicks  <= leftTargetTicks)  ||
+                         (rightTicks >= 0 && rightCurrentTicks >= rightTargetTicks) ||
+                         (rightTicks <= 0 && rightCurrentTicks <= rightTargetTicks);
+
+//dprint(term, "currentSpeed: %d leftCurrentTicks: %d rightCurrentTicks: %d\n", currentSpeed, leftCurrentTicks, rightCurrentTicks);/**/
+  }
+  while(!destinationReached);
+
+  // Deaccelerate
+  while(currentSpeed > 0)
+  {
+    currentSpeed -= speedStep;
+    if(currentSpeed < 0)
+      currentSpeed = 0;
+
+    const int leftCurrentSpeed  = leftTicks  >= 0 ? currentSpeed : -currentSpeed;
+    const int rightCurrentSpeed = rightTicks >= 0 ? currentSpeed : -currentSpeed;
+    drive_speed(leftCurrentSpeed, rightCurrentSpeed);
+  }
+}
