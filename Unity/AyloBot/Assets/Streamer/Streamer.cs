@@ -6,207 +6,224 @@ using System.IO;
 
 public class StreamerThread
 {
-	public StreamerThread()
-	{
-		thread = new Thread(new ThreadStart(Stream));
-	}
+   public StreamerThread()
+   {
+      thread = new Thread(new ThreadStart(Stream));
+   }
 
-	public void Start()
-	{
-		thread.Start();
-	}
+   public void Start()
+   {
+      thread.Start();
+   }
 
-	public void Stop()
-	{
-		stopped = true;
-		thread.Join();
+   public void Stop()
+   {
+      stopped = true;
+      thread.Join();
 
-		if(socket != null)
-			socket.Close();
-	}
+      CloseSocket();
+   }
 
-	public void SetServer(String address, int port)
-	{
-		this.address = address;
-		this.port = port;
-	}
+   public void SetServer(String address, int port)
+   {
+      this.address = address;
+      this.port = port;
+   }
 
-	public byte[] GetBuffer()
-	{
-		if(!newBufferIsReady)
-			return null;
+   public byte[] GetBuffer()
+   {
+      if(!newBufferIsReady)
+         return null;
 
-		Monitor.Enter(streamLock);
-		newBufferIsReady = false;
+      Monitor.Enter(streamLock);
+      newBufferIsReady = false;
 
-		return outputBuffer;
-	}
+      return outputBuffer;
+   }
 
-	public void DoneWithBuffer()
-	{
-		Monitor.Exit(streamLock);
-	}
+   public void DoneWithBuffer()
+   {
+      Monitor.Exit(streamLock);
+   }
 
-	public void Stream()
-	{		
-		while(!stopped)
-		{
-			Thread.Sleep(10);
+   public void Stream()
+   {      
+      while(!stopped)
+      {
+         Connect();
+         ReceiveData();
+      }
+   }
 
-			try
-			{
-				if(socket == null)
-				{
-					socket = new TcpClient(address, port);
-					socket.ReceiveTimeout = 1000;
-				}
-			}
-			catch(SocketException)
-			{
-				continue;
-			}
+   void Connect()
+   {
+      while(!stopped && socket == null)
+      {
+         try
+         {
+            socket = new TcpClient();
 
-			try
-			{
-				socket.GetStream().Read(sizeBuffer, 0, 4);
-				var size = System.BitConverter.ToInt32(sizeBuffer, 0);
+            var asyncResult = socket.BeginConnect(address, port, null, null);
+            asyncResult.AsyncWaitHandle.WaitOne(1000);
 
-				if(size > inputBufferSize)
-				{
-					inputBuffer = new byte[size];
-					inputBufferSize = size;
-				}
+            if(socket.Connected)
+               socket.EndConnect(asyncResult);
+            else
+               throw new Exception();
 
-				int totalBytesRead = 0;
-				while(totalBytesRead < size)
-				{
-					var nBytesRead = socket.GetStream().Read(inputBuffer, totalBytesRead, size - totalBytesRead);
-					totalBytesRead += nBytesRead;
+            socket.ReceiveTimeout = 1000;
+         }
+         catch(Exception)
+         {
+            CloseSocket();
+            continue;
+         }
+      }
+   }
 
-					if(nBytesRead == 0)
-					{
-						socket.Close();
-						socket = null;
-						break;
-					}
-				}
+   void ReceiveData()
+   {
+      while(!stopped && socket != null)
+      {
+         try
+         {
+            socket.GetStream().Read(sizeBuffer, 0, 4);
+            var size = System.BitConverter.ToInt32(sizeBuffer, 0);
+            
+            if(size > inputBufferSize)
+            {
+               inputBuffer = new byte[size];
+               inputBufferSize = size;
+            }
+            
+            int totalBytesRead = 0;
+            while(totalBytesRead < size)
+            {
+               var nBytesRead = socket.GetStream().Read(inputBuffer, totalBytesRead, size - totalBytesRead);
+               totalBytesRead += nBytesRead;
+               
+               if(nBytesRead == 0)
+                  throw new Exception();
+            }
 
-				Monitor.Enter(streamLock);
-				try
-				{
-					SwapBuffers();
-					newBufferIsReady = true;
-				}
-				finally
-				{
-					Monitor.Exit(streamLock);
-				}
-			}
-			catch(SocketException)
-			{
-				socket.Close();
-				socket = null;
-				continue;
-			}
-			catch(Exception e)
-			{
-				socket.Close();
-				socket = null;
-				continue;
-			}
-		}
-	}
+            SwapBuffers();
+         }
+         catch(Exception)
+         {
+            CloseSocket();
+            return;
+         }
+      }
+   }
 
-	void SwapBuffers()
-	{
-		var tempBuffer = inputBuffer;
-		inputBuffer = outputBuffer;
-		outputBuffer = tempBuffer;
-		
-		var tempBufferSize = inputBufferSize;
-		inputBufferSize = outputBufferSize;
-		outputBufferSize = tempBufferSize;
-	}
+   void SwapBuffers()
+   {
+      Monitor.Enter(streamLock);
+      try
+      {
+         var tempBuffer = inputBuffer;
+         inputBuffer = outputBuffer;
+         outputBuffer = tempBuffer;
+         
+         var tempBufferSize = inputBufferSize;
+         inputBufferSize = outputBufferSize;
+         outputBufferSize = tempBufferSize;
 
-	private Thread thread;
-	private object streamLock = new object();
-	private TcpClient socket;
-	private volatile bool stopped = false;
-	byte[] sizeBuffer = new byte[4];
-	private volatile int inputBufferSize = -1;
-	private volatile int outputBufferSize = -1;
-	private volatile byte[] inputBuffer;
-	private volatile byte[] outputBuffer;
-	private volatile bool newBufferIsReady = false;
-	private String address;
-	private int port;
+         newBufferIsReady = true;
+      }
+      finally
+      {
+         Monitor.Exit(streamLock);
+      }
+   }
+
+   void CloseSocket()
+   {
+      if(socket != null)
+         socket.Close();
+      
+      socket = null;
+   }
+
+   Thread thread;
+   object streamLock = new object();
+   TcpClient socket;
+   volatile bool stopped = false;
+   byte[] sizeBuffer = new byte[4];
+   volatile int inputBufferSize = -1;
+   volatile int outputBufferSize = -1;
+   volatile byte[] inputBuffer;
+   volatile byte[] outputBuffer;
+   volatile bool newBufferIsReady = false;
+   String address;
+   int port;
 }
 
 public class Streamer : MonoBehaviour
 {
-	public String address;
-	public int port;
+   public String address;
+   public int port;
 
-	void Start()
-	{
-		texture = new Texture2D(1, 1);
-		texture.SetPixel(0, 0, new Color(0, 0, 0));
-		texture.Apply();
-	}
+   void Start()
+   {
+      texture = new Texture2D(1, 1);
+      texture.SetPixel(0, 0, new Color(0, 0, 0));
+      texture.Apply();
+   }
 
-	void Update()
-	{
-		if(stream == null)
-		{
-			stream = new StreamerThread();
-			stream.SetServer(address, port);
-			stream.Start();
-		}
+   void Update()
+   {
+      if(stream == null)
+      {
+         stream = new StreamerThread();
+         stream.SetServer(address, port);
+         stream.Start();
+      }
 
-		stream.SetServer(address, port);
+      stream.SetServer(address, port);
 
-		var buffer = stream.GetBuffer();
-		if(buffer != null)
-		{
-			texture.LoadImage(buffer);
-			stream.DoneWithBuffer();
+      var buffer = stream.GetBuffer();
+      if(buffer != null)
+      {
+         texture.LoadImage(buffer);
+         stream.DoneWithBuffer();
 
-			UpdateFrameRate();
-			UpdateAspectRatio();
-		}
+         UpdateFrameRate();
+         UpdateAspectRatio();
+      }
 
-		gameObject.GetComponent<MeshRenderer>().material.SetTexture(0, texture);
-	}
+      gameObject.GetComponent<MeshRenderer>().material.SetTexture(0, texture);
+   }
 
-	public void OnApplicationQuit()
-	{
-		stream.Stop();
-	}
+   public void OnApplicationQuit()
+   {
+      stream.Stop();
+   }
 
-	void UpdateFrameRate()
-	{
-		if(Time.time - frameCountStartTime > 1)
-		{
-			frameCountStartTime = Time.time;
-			frames = 0;
-		}
-		else
-			frames++;
-	}
+   void UpdateFrameRate()
+   {
+      if(Time.time - frameCountStartTime > 1)
+      {
+         frameCountStartTime = Time.time;
+         frames = 0;
+      }
+      else
+         frames++;
+   }
 
-	void UpdateAspectRatio()
-	{
-		if(texture.height == 0)
-			return;
+   void UpdateAspectRatio()
+   {
+      if(texture.height == 0)
+         return;
 
-		float textureAspectRatio = texture.width / (float)texture.height;
+      float textureAspectRatio = texture.width / (float)texture.height;
 
-		var transform = gameObject.transform;
-		transform.localScale = new Vector3(textureAspectRatio, 0, 1);
-	}
+      var transform = gameObject.transform;
+      transform.localScale = new Vector3(textureAspectRatio, 0, 1);
+   }
 
-	private int frames = 0;
-	private float frameCountStartTime = 0;
-	private StreamerThread stream;
-	private Texture2D texture;
+   private int frames = 0;
+   private float frameCountStartTime = 0;
+   private StreamerThread stream;
+   private Texture2D texture;
 }
