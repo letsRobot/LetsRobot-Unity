@@ -66,10 +66,11 @@ public class StreamerThread
             var asyncResult = socket.BeginConnect(address, port, null, null);
             asyncResult.AsyncWaitHandle.WaitOne(1000);
 
-            if(socket.Connected)
-               socket.EndConnect(asyncResult);
-            else
+            if(!socket.Connected)
                throw new Exception();
+
+            // We really should call socket.EndConnect() here.
+            // It was removed as it seemed to make the socket hang when the WiFi connection was bad.
 
             socket.ReceiveTimeout = 1000;
          }
@@ -166,9 +167,14 @@ public class Streamer : MonoBehaviour
 
    void Start()
    {
-      texture = new Texture2D(1, 1);
-      texture.SetPixel(0, 0, new Color(0, 0, 0));
-      texture.Apply();
+      texture1 = new Texture2D(1, 1);
+      texture2 = new Texture2D(1, 1);
+
+      texture1.SetPixel(0, 0, new Color(0, 0, 0));
+      texture2.SetPixel(0, 0, new Color(0, 0, 0));
+
+      texture1.Apply();
+      texture2.Apply();
    }
 
    void Update()
@@ -185,14 +191,19 @@ public class Streamer : MonoBehaviour
       var buffer = stream.GetBuffer();
       if(buffer != null)
       {
-         texture.LoadImage(buffer);
+         if(texture2.LoadImage(buffer))
+         {
+            var tempTexture = texture1;
+            texture1 = texture2;
+            texture2 = tempTexture;
+         }
          stream.DoneWithBuffer();
 
          UpdateFrameRate();
          UpdateAspectRatio();
       }
 
-      gameObject.GetComponent<MeshRenderer>().material.SetTexture(0, texture);
+      gameObject.GetComponent<MeshRenderer>().material.SetTexture(0, texture1);
    }
 
    public void OnApplicationQuit()
@@ -213,10 +224,10 @@ public class Streamer : MonoBehaviour
 
    void UpdateAspectRatio()
    {
-      if(texture.height == 0)
+      if(texture1.height == 0)
          return;
 
-      float textureAspectRatio = texture.width / (float)texture.height;
+      float textureAspectRatio = texture1.width / (float)texture1.height;
 
       var transform = gameObject.transform;
       transform.localScale = new Vector3(textureAspectRatio, 0, 1);
@@ -225,5 +236,6 @@ public class Streamer : MonoBehaviour
    private int frames = 0;
    private float frameCountStartTime = 0;
    private StreamerThread stream;
-   private Texture2D texture;
+   private Texture2D texture1;
+   private Texture2D texture2;
 }
