@@ -11,11 +11,11 @@ public class titleScreen : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.anyKeyDown) {
+		//if (Input.anyKeyDown) {
 
-			Application.LoadLevel(Application.loadedLevel + 1);
+			//Application.LoadLevel(Application.loadedLevel + 1);
 
 		}
 	
 	}
-}
+
