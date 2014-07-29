@@ -191,13 +191,16 @@ public class Streamer : MonoBehaviour
       var buffer = stream.GetBuffer();
       if(buffer != null)
       {
-         if(texture2.LoadImage(buffer))
+         texture2.LoadImage(buffer);
+         stream.DoneWithBuffer();
+
+         // Check if the new image has the same dimension as the default image used when LoadImage() fails.
+         if(!(texture2.height == 8 && texture2.width == 8))
          {
             var tempTexture = texture1;
             texture1 = texture2;
             texture2 = tempTexture;
          }
-         stream.DoneWithBuffer();
 
          UpdateFrameRate();
          UpdateAspectRatio();
