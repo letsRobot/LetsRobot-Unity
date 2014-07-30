@@ -74,6 +74,12 @@ class IrcMessageReceiver : private IrcClientObserver
          else if(message == "poke")
             SendToRobot("k");
 
+         else if(message == "open")
+            SendToRobot("o");
+
+         else if(message == "close")
+            SendToRobot("g");
+
          else if(message == "echo")
          {
             SendToRobot("p");
