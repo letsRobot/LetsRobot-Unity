@@ -73,7 +73,7 @@ class StreamerThread :
                if(stopped)
                   return;
 
-               if(!ReadEntireFile())
+               if(!PrepareBuffer())
                {
                   std::cerr << "Failed to read file." << std::endl;
                   continue;
@@ -117,7 +117,7 @@ class StreamerThread :
          }
       }
 
-      bool ReadEntireFile()
+      bool PrepareBuffer()
       {
          ScopedFile file(open(filename.c_str(), O_RDONLY));
 
@@ -142,9 +142,24 @@ class StreamerThread :
 
          const auto buffer = GetBuffer(size);
 
-         *(uint32_t *)buffer = size; // The first 4 bytes of the buffer will hold the size of the file being transfered
+         // The data that is sent has the following structure:
+         //
+         // Offset   Size           Description
+         // -------------------------------------------
+         // 0        4              Magic number 0x1234
+         // 4        4              File size
+         // 8        4              Magic number 0x5678
+         // 12       4              File size
+         // 16       4              Magic number 0xabcd
+         // 20       File size      File data
 
-         if(read(file, buffer + 4, size) == -1)
+         *(uint32_t *)&buffer[0]  = 0x1234;
+         *(uint32_t *)&buffer[4]  = size;
+         *(uint32_t *)&buffer[8]  = 0x5678;
+         *(uint32_t *)&buffer[12] = size;
+         *(uint32_t *)&buffer[16] = 0xabcd;
+
+         if(read(file, buffer + 20, size) == -1)
             return false;
 
          return true;
@@ -152,13 +167,15 @@ class StreamerThread :
 
       char * GetBuffer(off_t size)
       {
-         if(size > currentBufferSize)
+      	const auto newContentSize = size + 20;
+
+      	if(size > currentBufferSize)
          {
-            buffer.reset(new char[size + 4]); // The 4 extra bytes are for the size of the file
+            buffer.reset(new char[newContentSize]);
             currentBufferSize = size;
          }
 
-         bufferContentSize = size + 4;
+         bufferContentSize = newContentSize;
 
          return buffer.get();
       }
