@@ -26,8 +26,15 @@ public class StreamerThread
 
    public void SetServer(String address, int port)
    {
+      Monitor.Enter(streamLock);
       this.address = address;
       this.port = port;
+      Monitor.Exit(streamLock);
+   }
+
+   public void SetMaxSize(int maxSize)
+   {
+      this.maxSize = maxSize;
    }
 
    public byte[] GetBuffer()
@@ -63,14 +70,15 @@ public class StreamerThread
          {
             socket = new TcpClient();
 
+            Monitor.Enter(streamLock);
             var asyncResult = socket.BeginConnect(address, port, null, null);
+            Monitor.Exit(streamLock);
             asyncResult.AsyncWaitHandle.WaitOne(1000);
 
-            if(!socket.Connected)
+            if(socket.Connected)
+               socket.EndConnect(asyncResult);
+            else
                throw new Exception();
-
-            // We really should call socket.EndConnect() here.
-            // It was removed as it seemed to make the socket hang when the WiFi connection was bad.
 
             socket.ReceiveTimeout = 1000;
          }
@@ -88,9 +96,15 @@ public class StreamerThread
       {
          try
          {
-            socket.GetStream().Read(sizeBuffer, 0, 4);
-            var size = System.BitConverter.ToInt32(sizeBuffer, 0);
-            
+            var magicNumber1 = ReadInt();
+            var size         = ReadInt();
+            var magicNumber2 = ReadInt();
+            var size2        = ReadInt();
+            var magicNumber3 = ReadInt();
+
+            if(magicNumber1 != 0x1234 || magicNumber2 != 0x5678 || magicNumber3 != 0xabcd || size != size2 || size > maxSize)
+               throw new Exception();
+
             if(size > inputBufferSize)
             {
                inputBuffer = new byte[size];
@@ -98,7 +112,7 @@ public class StreamerThread
             }
             
             int totalBytesRead = 0;
-            while(totalBytesRead < size)
+            while(totalBytesRead < size && !stopped)
             {
                var nBytesRead = socket.GetStream().Read(inputBuffer, totalBytesRead, size - totalBytesRead);
                totalBytesRead += nBytesRead;
@@ -117,18 +131,24 @@ public class StreamerThread
       }
    }
 
+   int ReadInt()
+   {
+      socket.GetStream().Read(intBuffer, 0, 4);
+      return System.BitConverter.ToInt32(intBuffer, 0);
+   }
+
    void SwapBuffers()
    {
       Monitor.Enter(streamLock);
       try
       {
          var tempBuffer = inputBuffer;
-         inputBuffer = outputBuffer;
-         outputBuffer = tempBuffer;
+         inputBuffer    = outputBuffer;
+         outputBuffer   = tempBuffer;
          
          var tempBufferSize = inputBufferSize;
-         inputBufferSize = outputBufferSize;
-         outputBufferSize = tempBufferSize;
+         inputBufferSize    = outputBufferSize;
+         outputBufferSize   = tempBufferSize;
 
          newBufferIsReady = true;
       }
@@ -150,12 +170,13 @@ public class StreamerThread
    object streamLock = new object();
    TcpClient socket;
    volatile bool stopped = false;
-   byte[] sizeBuffer = new byte[4];
+   byte[] intBuffer = new byte[4];
    volatile int inputBufferSize = -1;
    volatile int outputBufferSize = -1;
    volatile byte[] inputBuffer;
    volatile byte[] outputBuffer;
    volatile bool newBufferIsReady = false;
+   int maxSize = 10 * 1024 * 1024;
    String address;
    int port;
 }
@@ -164,6 +185,7 @@ public class Streamer : MonoBehaviour
 {
    public String address;
    public int port;
+   public int maxFileSize; // If the received file size is larger than maxFileSize it is assumed that the data has been corrupted.
 
    void Start()
    {
@@ -183,19 +205,20 @@ public class Streamer : MonoBehaviour
       {
          stream = new StreamerThread();
          stream.SetServer(address, port);
+         stream.SetMaxSize(maxFileSize);
          stream.Start();
       }
 
+      stream.SetMaxSize(maxFileSize);
       stream.SetServer(address, port);
 
       var buffer = stream.GetBuffer();
       if(buffer != null)
       {
          texture2.LoadImage(buffer);
-         stream.DoneWithBuffer();
 
-         // Check if the new image has the same dimension as the default image used when LoadImage() fails.
-         if(!(texture2.height == 8 && texture2.width == 8))
+         // Check if the texture has the same dimensions as the default texture Unity uses when LoadImage() fails.
+         if(texture2.height != 8 || texture2.width != 8)
          {
             var tempTexture = texture1;
             texture1 = texture2;
@@ -205,6 +228,8 @@ public class Streamer : MonoBehaviour
          UpdateFrameRate();
          UpdateAspectRatio();
       }
+
+      stream.DoneWithBuffer();
 
       gameObject.GetComponent<MeshRenderer>().material.SetTexture(0, texture1);
    }
@@ -236,9 +261,9 @@ public class Streamer : MonoBehaviour
       transform.localScale = new Vector3(textureAspectRatio, 0, 1);
    }
 
-   private int frames = 0;
-   private float frameCountStartTime = 0;
-   private StreamerThread stream;
-   private Texture2D texture1;
-   private Texture2D texture2;
+   int frames = 0;
+   float frameCountStartTime = 0;
+   StreamerThread stream;
+   Texture2D texture1;
+   Texture2D texture2;
 }
