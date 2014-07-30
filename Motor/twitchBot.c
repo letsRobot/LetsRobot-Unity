@@ -5,8 +5,10 @@
 #include "fdserial.h"
 #include "abdrive.h"
 #include "ping.h"
+#include "servo.h"
 
 void Drive(int leftTicks, int rightTicks, int speed);
+void Grip(int gripTicks, int gripSpeed);
 
 fdserial *term; //enables full-duplex serilization of the terminal (In otherwise, 2 way signals between this computer and the robot)
 int ticks = 12; //each tick makes the wheel move by 3.25mm, 64 ticks is a full wheel rotation (or 208mm)
@@ -15,6 +17,8 @@ int maxSpeed = 128; //the maximum amount of ticks the robot can travel with the 
 int minSpeed = 2; //the lowest amount of ticks the robot can travel with the "drive_goto" function
 int maxTurnSpeed = 64;
 int minTurnSpeed = 2;
+int gripDegree = 0; //Angle of the servo that controls the gripper
+int gripState = -1;
 
 int pingDistance;
 
@@ -23,9 +27,12 @@ int main()
   //access the simpleIDE terminal
   simpleterm_close();
   //set full-duplex serialization for the terminal
-  term = fdserial_open(31, 30, 0, 115200);
+  term = fdserial_open(31, 30, 0, 9600);
 
   char c;
+
+  //servo_angle(16, gripDegree); //Orient gripper to half open on start
+  //pause(3000);
 
   while (1)
   {
@@ -104,9 +111,32 @@ int main()
       else if (c == 'k') // poke
       {
       }
+      else if (c == 'o') //open gripper
+      {
+        gripState = 0;
+        gripDegree = -1800;
+      }
+      else if (c == 'g') //close gripper
+      {
+        gripState = 1;
+        gripDegree = 1800;
+      }
     } // End of Read Character Function
+  if (gripState != -1) 
+  {
+    Grip(gripDegree, 2000);
+  }
   } // End of While Loop
 } //End of Main Loop
+
+void Grip(int gripTicks, int gripSpeed)
+{
+  servo_setramp(16, 32);
+  servo_angle(16, gripTicks);
+  dprint(term, "Using Gripper");
+  pause(gripSpeed);
+  gripState = -1;
+}
 
 void Drive(int leftTicks, int rightTicks, int speed)
 {
