@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 public class InputData : MonoBehaviour {
 
@@ -18,10 +19,19 @@ public class InputData : MonoBehaviour {
 
 	public GameObject streamer;
 
+	public string sendIP;
+	public int sendPort;
+
+	public GameObject Streamer;
+	private GameObject myStreamer;
+
+
 	void Start () {
 		getText = false;
 		thisInputText = showInput.gameObject.GetComponent<TextMesh>();
 		thisInstruction = showInstruction.gameObject.GetComponent<TextMesh>();
+		myStreamer = Streamer.gameObject.GetComponent<Transform>().gameObject;
+
 	}
 	
 	void Update () {
@@ -62,21 +72,20 @@ public class InputData : MonoBehaviour {
 				if (textStep == 0) {
 					//dont ever put get component in the update loop, except for here!
 					thisIP.gameObject.GetComponent<TextMesh>().text = inputText;
-					//streamer.gameObject.GetComponent<Streamer>().address = inputText;
+					sendIP = inputText;
 					textStep++;
 					
 				} else  {
 					//dont ever put get component in the update loop, except for also here!
 					thisPort.gameObject.GetComponent<TextMesh>().text = inputText;
-					//streamer.gameObject.GetComponent<Streamer>().port = inputText;
-					//int.TryParse(inputText, out streamer.gameObject.GetComponent<Streamer>().port);
-					//int portInt = 0;
-					//int.TryParse(inputText, out portInt)
-					//if (portInt > 0 && portInt < 10000) {
-						//streamer.gameObject.GetComponent<Streamer>().port = portInt;
-					//}
-					textStep = -1;
-					getText = false;
+					var checkInt = 0;
+					int.TryParse(inputText, out checkInt);
+					if (checkInt > 0 && checkInt < 10000) {
+						sendPort = checkInt;
+						textStep = -1;
+						getText = false;
+						//resetStream();
+					}
 				}
 
 				inputText = "";
@@ -88,5 +97,14 @@ public class InputData : MonoBehaviour {
 		}
 	} //end of enterText
 
+	void resetStream () {
 
-}
+		Destroy(myStreamer.gameObject);
+		myStreamer = (GameObject) Instantiate(Streamer);
+		Streamer newStreamer = myStreamer.gameObject.GetComponent<Streamer>();
+		newStreamer.address = sendIP;
+		newStreamer.port = sendPort;
+
+	} //end of resetStream
+
+}//end of class
