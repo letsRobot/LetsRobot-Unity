@@ -197,6 +197,9 @@ public class Streamer : MonoBehaviour
 
       texture1.Apply();
       texture2.Apply();
+
+		address = Constants.IP1;
+		port = Constants.Port1;
    }
 
    void Update()
@@ -232,6 +235,12 @@ public class Streamer : MonoBehaviour
       stream.DoneWithBuffer();
 
       gameObject.GetComponent<MeshRenderer>().material.SetTexture(0, texture1);
+
+		//I can't seem to reset the stream : D
+		if (InputData.resetStreamer == true) {
+			stream.Stop();
+			InputData.resetStreamer = false;
+		}
    }
 
    public void OnApplicationQuit()
