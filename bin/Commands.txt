@@ -1,0 +1,113 @@
+# Each command is given a privilege level.
+# To use a given command the user's privilege level much be at least as high as the command.
+# The default privilege level for a user is 0.
+# The privilege level for a user can be changed by adding them to the Users.txt file.
+# Setting a user's privilege level to -1 can be used to ban the user from using commands.
+#
+#
+# A command description consists of a number of keywords and parameters seperated by a single space.
+# A keyword is anyway character string that is not #s, #i, or ##.
+# A parameter #w means a single word.
+# A parameter #i means an integer.
+# A parameter #s means any number of words and must always be the last parameter.
+#
+#
+# The format of a command description is as follows:
+#
+# Privilege level
+# Cooldown time in seconds
+# Command description
+# Alternative command description 1
+# Alternative command description 2
+# ...
+# Alternative command description n
+# <blank line>
+#
+#
+# Make sure the file ends with a blank line.
+
+0
+0
+/q
+/quit
+
+10
+0
+/show #w
+
+10
+0
+/hide #w
+
+10
+0
+/whisper #w #s
+/pm #s #s
+
+10
+0
+/say #s
+/msg #s
+/message #s
+
+10
+0
+/me #s
+/action #s
+
+0
+0
+forward
+up
+fwd
+f
+
+0
+0
+back
+down
+b
+backward
+
+0
+0
+left
+l
+
+0
+0
+right
+r
+
+0
+0
+echo
+distance
+ping
+e
+
+0
+0
+poke
+
+0
+0
+open
+
+0
+0
+close
+
+0
+0
+light #i #w
+led #i #w
+
+0
+0
+light #i #i #i #i
+led #i #i #i #i
+
+0
+0
+barrel roll

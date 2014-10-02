@@ -1,0 +1,6 @@
+# <username> <privilege level>
+# If a user has a negative privilege level he is effectively banned from using commands.
+
+aylojill    10
+jesperlp    1
+test_person 1

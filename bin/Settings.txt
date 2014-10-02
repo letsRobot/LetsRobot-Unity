@@ -1,0 +1,13 @@
+serial_port      = /dev/ttyUSB0
+baud_rate        = 9600
+
+irc_server       = irc.twitch.tv
+irc_port         = 6667
+irc_channel      = #aylobot
+irc_username     = 
+irc_password     = oauth:
+
+show_chat        = false
+show_commands    = false
+show_robot       = false
+show_robot_debug = true

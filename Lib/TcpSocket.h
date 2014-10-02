@@ -196,16 +196,8 @@ class ScopedPosixSocket
       int s;
 };
 
-
-void TcpThrow(TcpSocketException::Type type, int errorCode = 0)
-{
-   throw TcpSocketException(type, TcpSocketException::None, errorCode);
-}
-
-void TcpThrow(TcpSocketException::Type type, TcpSocketException::Reason reason, int errorCode = 0)
-{
-   throw TcpSocketException(type, reason, errorCode);
-}
+void TcpThrow(TcpSocketException::Type type, int errorCode = 0);
+void TcpThrow(TcpSocketException::Type type, TcpSocketException::Reason reason, int errorCode = 0);
 
 class TcpSocket
 {
@@ -236,7 +228,7 @@ class PosixTcpSocket : public TcpSocket
       {
          assert(buffer);
 
-         if(nBytes > std::numeric_limits<int>::max())
+         if(nBytes > (size_t)std::numeric_limits<int>::max())
             nBytes = std::numeric_limits<int>::max();
 
          const auto resultRecv = recv(tcpSocket, buffer, nBytes, 0);
@@ -244,7 +236,7 @@ class PosixTcpSocket : public TcpSocket
          if(resultRecv == -1)
          {
             if(errno == EAGAIN || errno == EWOULDBLOCK)
-               TcpThrow(TcpSocketException::FailedToReceive, TcpSocketException::Reason_TimedOut);
+               throw TimedOutTcpSocketException();
 
             TcpThrow(TcpSocketException::FailedToReceive);
          }
@@ -302,7 +294,7 @@ class PosixTcpSocket : public TcpSocket
 class TcpServerSocket
 {
    public:
-      TcpServerSocket(uint16_t port, bool nonblocking = false)/**/
+      TcpServerSocket(uint16_t port, bool nonblocking = false)
       {
          serverSocket.Reset(socket(AF_INET, SOCK_STREAM, 0));
 
