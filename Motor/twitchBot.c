@@ -46,18 +46,22 @@ int main()
       if (c == 'f') //press "f" fof forward
       {           
         Drive(ticks, ticks, maxSpeed);
+        dprint(term, "ok\n");
       } 
       else if (c == 'b') //press "b" for backward
       { 
         Drive(-ticks, -ticks, maxSpeed);
+        dprint(term, "ok\n");
       } 
       else if (c == 'r') //press "r" for right turn
       { 
         Drive(turnTick, -turnTick, maxTurnSpeed);
+        dprint(term, "ok\n");
       } 
       else if (c == 'l') //press "l" for left turn
       { 
         Drive(-turnTick, turnTick, maxTurnSpeed);
+        dprint(term, "ok\n");
       } 
 
       //Increasing and Decreasing Drive Speed
@@ -106,6 +110,7 @@ int main()
       {
         pingDistance = ping(8);
         dprint(term, "echo %d\n", pingDistance);
+        dprint(term, "ok\n");
       }
 
       else if (c == 'k') // poke
@@ -133,8 +138,8 @@ void Grip(int gripTicks, int gripSpeed)
 {
   servo_setramp(16, 32);
   servo_angle(16, gripTicks);
-  dprint(term, "Using Gripper");
-  pause(gripSpeed);
+  //dprint(term, "Using Gripper");
+  //pause(gripSpeed);
   gripState = -1;
 }
 

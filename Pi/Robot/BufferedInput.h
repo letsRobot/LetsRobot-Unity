@@ -31,6 +31,9 @@ class BufferedInput
          std::string line;
 
          char c;
+         while((c = ReadChar()) != '\r')
+            line += c;
+
          while((c = ReadChar()) != '\n')
             line += c;
 

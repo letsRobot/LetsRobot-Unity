@@ -41,6 +41,7 @@
 // To send an ordinary messages, whispers, and actions (/me) can be sent using the functions SendMessage, SendWhisper, and SendActionMessage respectively.
 
 #include "Commands.h"
+#include "Lights.h"
 
 Command("/show #w")
 {
@@ -100,9 +101,9 @@ Command("close")
 Command("echo")
 {
    robot.Send("p");
-
+   const int distance = (0.03448 * robot.GetRobotStatus().echoTime) /2 + 0.5;
    std::stringstream str;
-   str << "Echo time: " << robot.GetRobotStatus().echoTime << ".";
+   str << "Distance to object: " << distance << "cm.";
 
    irc.SendMessage(str.str().c_str());
 }
@@ -114,6 +115,13 @@ Command("light #i #w")
 
 Command("light #i #i #i #i")
 {
+   const auto light = parameters.GetInteger(0);
+   const auto r = parameters.GetInteger(1);
+   const auto g = parameters.GetInteger(2);
+   const auto b = parameters.GetInteger(3);
+
+   lights.SetLight(light, r, g, b);
+
    std::cout << "LED " << parameters.GetInteger(0) << " now has RGB color " << parameters.GetInteger(1) << " " << parameters.GetInteger(2) << " " << parameters.GetInteger(3) <<  "." << std::endl;
 }
 
