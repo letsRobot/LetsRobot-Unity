@@ -101,16 +101,48 @@ Command("close")
 Command("echo")
 {
    robot.Send("p");
-   const int distance = (0.03448 * robot.GetRobotStatus().echoTime) /2 + 0.5;
+   const int distance = (0.03448 * robot.GetRobotStatus().echoTime) / 2 + 0.5;
    std::stringstream str;
    str << "Distance to object: " << distance << "cm.";
 
    irc.SendMessage(str.str().c_str());
 }
 
+Lights lights("/dev/i2c-1", 0x04);
+
 Command("light #i #w")
 {
-   std::cout << "LED " << parameters.GetInteger(0) << " now has color " << parameters.GetWord(1) << "." << std::endl;
+   const auto light = parameters.GetInteger(0);
+   const std::string color = parameters.GetWord(1);
+   int r = 0;
+   int g = 0;
+   int b = 0;
+
+   if(color == "red")
+   {
+      r = 255;
+      g = 0;
+      b = 0;
+   }
+
+   else if(color == "green")
+   {
+      r = 0;
+      g = 255;
+      b = 0;
+   }
+
+   else if(color == "blue")
+   {
+      r = 0;
+      g = 0;
+      b = 255;
+   }
+
+   lights.SetLight(light, r, g, b);
+
+//   std::cout << "LED " << light << " is now " << color << "." << std::endl;
+//   std::cout << "LED " << light << " now has RGB color " << r << " " << g << " " << b <<  "." << std::endl;
 }
 
 Command("light #i #i #i #i")
@@ -122,7 +154,7 @@ Command("light #i #i #i #i")
 
    lights.SetLight(light, r, g, b);
 
-   std::cout << "LED " << parameters.GetInteger(0) << " now has RGB color " << parameters.GetInteger(1) << " " << parameters.GetInteger(2) << " " << parameters.GetInteger(3) <<  "." << std::endl;
+//   std::cout << "LED " << parameters.GetInteger(0) << " now has RGB color " << parameters.GetInteger(1) << " " << parameters.GetInteger(2) << " " << parameters.GetInteger(3) <<  "." << std::endl;
 }
 
 void ExecuteShowHide(CommandFunctionParameters, bool showHide)

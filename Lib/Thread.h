@@ -20,7 +20,7 @@ class Thread
 
       void Start()
       {
-         const auto run =   [this]()
+         const auto run =  [this]()
                            {
                               this->RunAndCatchExceptions();
                            };

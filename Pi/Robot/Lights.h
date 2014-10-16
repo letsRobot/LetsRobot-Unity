@@ -10,22 +10,25 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <iostream>
+#include <iomanip>
 
 class Lights
 {
    public:
       Lights(const char * devName, int address)
+         : file(-1)
       {
          if((file = open(devName, O_RDWR)) < 0)
          {
-            fprintf(stderr, "I2C: Failed to access %s.\n", devName);
-            exit(1);
+            std::cout << "I2C: Failed to access " << devName << "." << std::endl;
+            return;
          }
 
          if (ioctl(file, I2C_SLAVE, address) < 0)
          {
-            fprintf(stderr, "I2C: Failed to acquire bus access/talk to slave 0x%x\n", address);
-            exit(1);
+            std::cout << "I2C: Failed to acquire bus access/talk to slave 0x" << std::hex << address << std::dec << "." << std::endl;
+            return;
          }
 
          printf("Connected to Arduino.\n");
@@ -47,6 +50,12 @@ class Lights
    private:
       void SendByte(char byte)
       {
+         if(file < 0)
+         {
+            std::cout << "I2C is not connected." << std::endl;
+            return;
+         }
+
          if (write(file, &byte, 1) == 1)
          {
             usleep(10000);
@@ -54,7 +63,7 @@ class Lights
             char buf[1];
             if (read(file, buf, 1) == 1)
             {
-               int temp = (int) buf[0];
+//               int temp = (int) buf[0];
 //               printf("Received %d\n", temp);
             }
          }

@@ -71,7 +71,7 @@ class GenericRobot
 
          while(true)
          {
-            line = input.ReadLine();
+            while((line = input.ReadLine()).empty());
 
             if(show)
                std::cout << "From robot: " << line << std::endl;
@@ -145,30 +145,36 @@ class GenericRobot
             const std::string strData = (char *)data;
 
             if(strData == "p")
-               reads.push("echo 123456789");
+               AddToReads("echo 123456789");
+
+            AddToReads("ok");
          }
 
          size_t Receive(void * data, size_t nBytes)
          {
             assert(data);
+            assert(!reads.empty());
 
-            std::string str;
+            const auto & str = reads.front();
+            const auto maxBytes = str.length() < nBytes ? str.length() : nBytes;
+            const size_t nBytesToRead = rand() % (maxBytes + 1);
 
-            if(!reads.empty())
-            {
-               str = reads.front();
+            memcpy(data, str.c_str(), nBytesToRead);
+
+            if(nBytesToRead == str.length())
                reads.pop();
-            }
             else
-               str = "ok";
+               reads.front() = str.substr(nBytesToRead, str.length() - nBytesToRead);
 
-            str += "\n";
-            memcpy(data, str.c_str(), str.length());
-
-            return str.length();
+            return nBytesToRead;
          }
 
       private:
+         void AddToReads(const std::string & line)
+         {
+            reads.push(line + "\r\n\r");
+         }
+
          std::queue<std::string> reads;
    };
 

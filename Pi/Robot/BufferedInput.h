@@ -25,7 +25,6 @@ class BufferedInput
          assert(bufferSize > 0);
       }
 
-      // Reads until \n and removes the \r before \n if there is any
       std::string ReadLine()
       {
          std::string line;
@@ -39,7 +38,7 @@ class BufferedInput
             c = ReadChar();
          }
 
-         if(line.back() == '\r')
+         while(line.length() > 0 && line.back() == '\r')
             line.pop_back();
 
          return std::move(line);
@@ -72,7 +71,9 @@ class BufferedInput
                try
                {
                   endBuffer = connection->Receive(buffer.get(), bufferSize);
-                  break;
+
+                  if(endBuffer != 0)
+                     break;
                }
                catch(TimedOutException &)
                { }
