@@ -31,11 +31,13 @@ class BufferedInput
          std::string line;
 
          char c;
-         while((c = ReadChar()) != '\r')
-            line += c;
+         while((c = ReadChar()) == '\r');
 
-         while((c = ReadChar()) != '\n')
+         while(c != '\n')
+         {
             line += c;
+            c = ReadChar();
+         }
 
          if(line.back() == '\r')
             line.pop_back();
