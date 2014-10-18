@@ -32,7 +32,7 @@ class BufferedInput
          char c;
          while((c = ReadChar()) == '\r');
 
-         while(c != '\n')
+         while(c != '\n' && c)
          {
             line += c;
             c = ReadChar();
