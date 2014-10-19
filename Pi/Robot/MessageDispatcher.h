@@ -6,7 +6,7 @@
 #include "MessageObserver.h"
 #include "ThreadSafeQueue.h"
 #include "Tokenizer.h"
-#include "CommandExecuter.h"
+#include "CommandExecuterThread.h"
 #include <ctime>
 #include <sstream>
 #include <utility>
@@ -29,31 +29,7 @@ struct Message
          return user;
       }
 
-      // Returns a string corresponding to the original message but in lowercase and with exactly one space between words.
-      const std::string & GetCleanMessage()
-      {
-         if(!cleanMessage.empty())
-            return cleanMessage;
-
-         std::string lowercaseMessage;
-         for(auto & c : originalMessage)
-            lowercaseMessage += tolower(c);
-
-         Tokenizer tokenizer(lowercaseMessage.c_str(), lowercaseMessage.length());
-         tokenizer.SetDelimiters(" ");
-
-         while(tokenizer.HasMore())
-         {
-            cleanMessage += tokenizer.GetNext();
-
-            if(tokenizer.HasMore())
-               cleanMessage += " ";
-         }
-
-         return cleanMessage;
-      }
-
-      const std::string & GetOriginalMessage() const
+      const std::string & GetMessage() const
       {
          return originalMessage;
       }
@@ -88,7 +64,7 @@ class MessageDispatcher
          stopped = true;
       }
 
-      void SetCommandExecuter(CommandExecuter * commandExecuter)
+      void SetCommandExecuterThread(CommandExecuterThread * commandExecuter)
       {
          assert(commandExecuter);
 
@@ -125,11 +101,11 @@ class MessageDispatcher
             {
                Message message = messageQueue.Pop();
 
-               const auto actualCommand = ParseMessage(message.GetCleanMessage());
+               const auto actualCommand = ParseMessage(message.GetMessage());
                if(!actualCommand.GetCommandDescription())
                {
                   if(message.GetUser().empty())
-                     std::cout << "Unknown command: " << message.GetOriginalMessage() << std::endl;
+                     std::cout << "Unknown command: " << message.GetMessage() << std::endl;
 
                   continue;
                }
@@ -138,7 +114,7 @@ class MessageDispatcher
                   continue;
 
                if(commandExecuter)
-                  stopped = commandExecuter->ExecuteCommand(actualCommand, message.GetOriginalMessage());
+                  commandExecuter->AddCommand(actualCommand);
             }
          }
       }
@@ -167,7 +143,7 @@ class MessageDispatcher
 
       volatile bool stopped;
       CommandDescriptions * const commandDescriptions;
-      CommandExecuter * commandExecuter;
+      CommandExecuterThread * commandExecuter;
       ThreadSafeQueue<Message> messageQueue;
       Users * const users;
       bool showChat;

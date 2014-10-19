@@ -1,26 +1,33 @@
-#ifndef CommandExecuter_h
-#define CommandExecuter_h
+#ifndef CommandExecuterThread_h
+#define CommandExecuterThread_h
 
 #include "IrcThread.h"
 #include "CommandDescriptions.h"
 #include "Robot.h"
 #include "CommandFunctions.h"
+#include "Stoppable.h"
+#include "ThreadSafeQueue.h"
+#include <Thread.h>
 #include <map>
 #include <cassert>
 
-class CommandExecuter
+class CommandExecuterThread
+   : public Thread
 {
    public:
-      CommandExecuter(Robot * robot, IrcThread * irc, bool showCommands)
+      CommandExecuterThread(Robot * robot, IrcThread * irc, bool showCommands, Stoppable * stoppableProgram)
          : robot(robot),
            irc(irc),
            showCommands(showCommands),
-           showChat(&showChatDummy)
+           showChat(&showChatDummy),
+           stoppableProgram(stoppableProgram)
       {
          assert(robot);
          assert(irc);
+         assert(stoppableProgram);
 
          BuildCommandFunctionMap();
+         Start();
       }
 
       void SetShowChat(bool * showChat)
@@ -30,16 +37,44 @@ class CommandExecuter
          this->showChat = showChat;
       }
 
-      // Returns true after the quit command has been executed.
-      bool ExecuteCommand(const ActualCommand & actualCommand, const std::string & message)
+      void AddCommand(const ActualCommand & actualCommand)
       {
          assert(&actualCommand);
-         assert(&message);
+
+         commands.Push(actualCommand);
+      }
+
+   private:
+      void Run()
+      {
+         try
+         {
+            while(!stopped)
+            {
+               while(!stopped && !commands.IsEmpty())
+               {
+                  const auto command = commands.Pop();
+                  ExecuteCommand(command);
+               }
+
+               Thread::Sleep(100);
+            }
+         }
+         catch(...)
+         {
+            stoppableProgram->Stop();
+            throw;
+         }
+      }
+
+      void ExecuteCommand(const ActualCommand & actualCommand)
+      {
+         assert(&actualCommand);
 
          const auto commandDescription = actualCommand.GetCommandDescription()->GetString();
 
          if(CommandNeedsToCoolDown(actualCommand.GetCommandDescription()))
-            return false;
+            return;
 
          if(showCommands)
             std::cout << "Executing command: " << commandDescription << std::endl;
@@ -47,18 +82,16 @@ class CommandExecuter
          if(commandDescription == "/q")
          {
             std::cout << "Quitting." << std::endl;
-            return true;
+            stoppableProgram->Stop();
+            return;
          }
 
          auto iCommandFunction = commandFunctions.find(commandDescription);
 
          if(iCommandFunction != commandFunctions.end())
             iCommandFunction->second(actualCommand, *robot, *irc, showCommands, *showChat);
-
-         return false;
       }
 
-   private:
       void BuildCommandFunctionMap()
       {
          auto node = CommandFunctions::First();
@@ -98,8 +131,10 @@ class CommandExecuter
       bool showCommands;
       bool showChatDummy;
       bool * showChat;
+      Stoppable * const stoppableProgram;
       std::map<std::string, CommandFunctions::CommandFunctionPointer> commandFunctions;
       std::map<std::string, time_t> timesOfLastCommands;
+      ThreadSafeQueue<ActualCommand> commands;
 };
 
 #endif

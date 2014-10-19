@@ -3,7 +3,7 @@
 
 #include "IrcClient.h"
 #include "MessageObserver.h"
-#include "ErrorObserver.h"
+#include "Stoppable.h"
 #include <Thread.h>
 #include <iostream>
 #include <string>
@@ -18,7 +18,7 @@ class IrcThread
      public IrcClientObserver
 {
    public:
-      IrcThread(const char * server, uint16_t port, const char * channel, const char * username, const char * password, uint32_t id, MessageObserver * messageObserver, ErrorObserver * errorObserver)
+      IrcThread(const char * server, uint16_t port, const char * channel, const char * username, const char * password, uint32_t id, MessageObserver * messageObserver, Stoppable * stoppableProgram)
          : server(server),
            port(port),
            channel(channel),
@@ -26,14 +26,14 @@ class IrcThread
            password(password),
            id(id),
            messageObserver(messageObserver),
-           errorObserver(errorObserver)
+           stoppableProgram(stoppableProgram)
       {
          assert(server);
          assert(channel);
          assert(username);
          assert(password);
          assert(messageObserver);
-         assert(errorObserver);
+         assert(stoppableProgram);
 
          Start();
       }
@@ -111,7 +111,7 @@ class IrcThread
 
                const int nSecondsUntilRetry = 10;
 
-               std::cout << "Connection attempt failed." << std::endl << e.Message() << std::endl;
+               std::cout << "IRC connection attempt failed." << std::endl << e.Message() << std::endl;
                std::cout << "Will retry in " << nSecondsUntilRetry << (nSecondsUntilRetry == 1 ? " second." : " seconds.") << std::endl;
 
                for(int i = 0; i < 10 * nSecondsUntilRetry && !stopped; i++)
@@ -119,7 +119,7 @@ class IrcThread
             }
             catch(...)
             {
-               errorObserver->ReportFatalError();
+               stoppableProgram->Stop();
                throw;
             }
          }
@@ -180,7 +180,7 @@ class IrcThread
       const std::string password;
       const uint32_t id;
       MessageObserver * const messageObserver;
-      ErrorObserver * const errorObserver;
+      Stoppable * const stoppableProgram;
       std::unique_ptr<IrcClient> irc;
       std::mutex ircLock; // This lock is used whenever the irc unique pointer is changed.
 };

@@ -154,7 +154,9 @@ class ActualCommand
       {
          assert(&command);
 
-         Tokenizer tokenizer(command.c_str(), command.length(), " ");
+         const auto cleanCommand = MakeCleanCommand(command);
+
+         Tokenizer tokenizer(cleanCommand.c_str(), cleanCommand.length(), " ");
 
          while(tokenizer.HasMore())
          {
@@ -226,6 +228,28 @@ class ActualCommand
       }
 
    private:
+      // Returns a string corresponding to the original string but in lowercase and with exactly one space between words.
+      const std::string MakeCleanCommand(const std::string & command) const
+      {
+         Tokenizer tokenizer(command.c_str(), command.length());
+         tokenizer.SetDelimiters(" ");
+
+         std::string cleanCommand;
+         while(tokenizer.HasMore())
+         {
+            cleanCommand += tokenizer.GetNext();
+
+            if(tokenizer.HasMore())
+               cleanCommand += " ";
+         }
+
+         // Make everything lowercase.
+         for(auto & c : cleanCommand)
+            c = tolower(c);
+
+         return std::move(cleanCommand);
+      }
+
       void AddPart(const ActualCommandPart & part, size_t partPositionInMessage)
       {
          assert(&part);

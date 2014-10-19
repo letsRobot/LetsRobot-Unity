@@ -2,7 +2,7 @@
 #define StandardInputThread_h
 
 #include "MessageObserver.h"
-#include "ErrorObserver.h"
+#include "Stoppable.h"
 #include <Thread.h>
 #include <string>
 #include <iostream>
@@ -12,13 +12,13 @@ class StandardInputThread
    : public Thread
 {
    public:
-      StandardInputThread(uint32_t id, MessageObserver * messageObserver, ErrorObserver * errorObserver)
+      StandardInputThread(uint32_t id, MessageObserver * messageObserver, Stoppable * stoppableProgram)
          : id(id),
            messageObserver(messageObserver),
-           errorObserver(errorObserver)
+           stoppableProgram(stoppableProgram)
       {
          assert(messageObserver);
-         assert(errorObserver);
+         assert(stoppableProgram);
 
          Start();
       }
@@ -46,7 +46,7 @@ class StandardInputThread
          }
          catch(...)
          {
-            errorObserver->ReportFatalError();
+            stoppableProgram->Stop();
             throw;
          }
       }
@@ -76,7 +76,7 @@ class StandardInputThread
 
       const uint32_t id;
       MessageObserver * const messageObserver;
-      ErrorObserver * const errorObserver;
+      Stoppable * const stoppableProgram;
 };
 
 #endif
