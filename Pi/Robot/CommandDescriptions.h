@@ -296,7 +296,7 @@ class ActualCommand
          return false;
       }
 
-      const std::string & strCommand;
+      const std::string strCommand;
       const CommandDescription * commandDescription;
       size_t iSingleCommandDescription;
       std::vector<ActualCommandPart> parts;
