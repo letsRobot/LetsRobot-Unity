@@ -42,6 +42,7 @@
 
 #include "Commands.h"
 #include "Lights.h"
+#include <map>
 
 Command("/show #w")
 {
@@ -112,37 +113,43 @@ Lights lights("/dev/i2c-1", 0x04);
 
 Command("light #i #w")
 {
+   struct Rgb
+   {
+      uint8_t r, g, b;
+   };
+
+   const std::map<std::string, Rgb> colors =
+   {
+      {"black",   {0,   0,   0  }},
+      {"red",     {255, 0,   0  }},
+      {"green",   {0,   255, 0  }},
+      {"blue",    {0,   0,   255}},
+      {"yellow",  {255, 255,   0}},
+      {"purple",  {255, 0,   255}},
+      {"magenta", {255, 0,   255}},
+      {"cyan",    {0,   255, 255}},
+      {"white",   {255, 255, 255}},
+   };
+
    const auto light = parameters.GetInteger(0);
    const std::string color = parameters.GetWord(1);
-   int r = 0;
-   int g = 0;
-   int b = 0;
+   const uint8_t maxIntensity = 100;
 
-   if(color == "red")
-   {
-      r = 255;
-      g = 0;
-      b = 0;
-   }
+   const auto iColor = colors.find(color);
 
-   else if(color == "green")
-   {
-      r = 0;
-      g = 255;
-      b = 0;
-   }
+   if(iColor == colors.end())
+      return;
 
-   else if(color == "blue")
-   {
-      r = 0;
-      g = 0;
-      b = 255;
-   }
+   auto rgb = iColor->second;
 
-   lights.SetLight(light, r, g, b);
+   rgb.r = rgb.r * (double)maxIntensity / 255 + 0.5;
+   rgb.g = rgb.g * (double)maxIntensity / 255 + 0.5;
+   rgb.b = rgb.b * (double)maxIntensity / 255 + 0.5;
+
+   lights.SetLight(light, rgb.r, rgb.g, rgb.b);
 
 //   std::cout << "LED " << light << " is now " << color << "." << std::endl;
-//   std::cout << "LED " << light << " now has RGB color " << r << " " << g << " " << b <<  "." << std::endl;
+//   std::cout << "LED " << light << " now has RGB color " << (int)rgb.r << " " << (int)rgb.g << " " << (int)rgb.b <<  "." << std::endl;
 }
 
 Command("light #i #i #i #i")
