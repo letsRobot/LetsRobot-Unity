@@ -188,6 +188,11 @@ class ActualCommand
          return commandDescription;
       }
 
+      const std::string & GetCommandString() const
+      {
+         return strCommand;
+      }
+
       size_t GetNumberOfParts() const
       {
          return parts.size();
@@ -464,10 +469,10 @@ class CommandDescriptions
          assert(&actualCommand);
          assert(&singleCommandDescription);
 
-         if(actualCommand.GetNumberOfParts() < singleCommandDescription.size())
+         if(actualCommand.GetNumberOfParts() != singleCommandDescription.size() && !ContainsStringParameter(singleCommandDescription))
             return false;
 
-         for(size_t iPart = 0; iPart < actualCommand.GetNumberOfParts(); iPart++)
+         for(size_t iPart = 0; iPart < singleCommandDescription.size(); iPart++)
          {
             const auto & actualPart = actualCommand.GetPart(iPart);
             const auto & descriptionPart = singleCommandDescription[iPart];
@@ -480,6 +485,15 @@ class CommandDescriptions
          }
 
          return true;
+      }
+
+      bool ContainsStringParameter(const std::vector<CommandDescriptionPart> & singleCommandDescription) const
+      {
+         for(const auto & parameter : singleCommandDescription)
+            if(parameter.type == CommandPartType::String)
+               return true;
+
+         return false;
       }
 
       bool PartsAreCompatible(const ActualCommandPart & actualPart, const CommandDescriptionPart & descriptionPart) const
