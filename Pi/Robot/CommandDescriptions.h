@@ -474,6 +474,9 @@ class CommandDescriptions
 
          for(size_t iPart = 0; iPart < singleCommandDescription.size(); iPart++)
          {
+            if(iPart >= actualCommand.GetNumberOfParts())
+               return false;
+
             const auto & actualPart = actualCommand.GetPart(iPart);
             const auto & descriptionPart = singleCommandDescription[iPart];
 
