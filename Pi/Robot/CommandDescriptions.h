@@ -141,7 +141,7 @@ struct ActualCommandPart
 };
 
 // The class ActualCommand represents an invocation command with associated parameter values as opposed to merely a description of a command.
-// For instance the command 'light 10 blue' is an actual command consisting of the keyword 'left', the integer 10, and the string 'blue'.
+// For instance the command 'light 10 blue' is an actual command consisting of the keyword 'light', the integer 10, and the string 'blue'.
 class ActualCommand
    : public ActualCommandParameters
 {

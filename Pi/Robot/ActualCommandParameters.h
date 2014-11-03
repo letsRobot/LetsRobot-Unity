@@ -1,9 +1,10 @@
 #ifndef ActualCommandParameters_h
 #define ActualCommandParameters_h
 
-#include <cstdint>
+#include <cstdint> //This header defines a set of integral type aliases with specific width requirements, 
+//along with macros specifying their limits and macro functions to create values of these types.
 
-class ActualCommandParameters
+class ActualCommandParameters //Used in CommandDescriptions.h
 {
    public:
       virtual ~ActualCommandParameters() noexcept { }

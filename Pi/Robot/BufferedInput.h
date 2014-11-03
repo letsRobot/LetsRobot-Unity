@@ -1,6 +1,9 @@
 #ifndef BufferedInput_h
 #define BufferedInput_h
 
+//Read lines from an input like a serial port or an internet socket, and store the characters in a buffer instead of reading them one at a time.
+//This is more effecient than reading characters one at a time since serial port uses a non-trivial amount of time before it times out.
+
 #include <string>
 #include <cstring>
 #include <memory>
