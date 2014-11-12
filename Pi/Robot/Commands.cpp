@@ -1,6 +1,6 @@
 // To add a new command add the following
 //
-//      Command("<command description>")
+//    Command("<command description>")
 //    {
 //        <code to handle command>
 //    }
@@ -57,11 +57,17 @@ Command("/hide #w")
 Command("/say #s")
 {
    irc.SendMessage(parameters.GetString(0));
+
+   messageObserver.NewMessage(true, irc.GetUsername(), parameters.GetString(0));
 }
 
 Command("/me #s")
 {
    irc.SendActionMessage(parameters.GetString(0));
+
+   std::string message = "\001ACTION\001";
+   message += parameters.GetString(0);
+   messageObserver.NewMessage(true, irc.GetUsername(), message);
 }
 
 Command("forward")

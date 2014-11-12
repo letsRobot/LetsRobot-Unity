@@ -188,6 +188,13 @@ class ActualCommand
          return commandDescription;
       }
 
+      const std::string GetCommandDescriptionString() const
+      {
+         assert(commandDescription);
+
+         return commandDescription->GetString(0);
+      }
+
       const std::string & GetCommandString() const
       {
          return strCommand;

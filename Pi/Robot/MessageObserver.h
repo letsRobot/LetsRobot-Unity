@@ -5,7 +5,7 @@ class MessageObserver
 {
    public:
       virtual ~MessageObserver() noexcept { }
-      virtual void NewMessage(uint32_t id, const std::string & user, const std::string & message) = 0;
+      virtual void NewMessage(bool fromChat, const std::string & user, const std::string & message) = 0;
 };
 
 

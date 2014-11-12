@@ -3,7 +3,7 @@
 
 #include "IrcThread.h"
 #include "StandardInputThread.h"
-////#include "UnityThreads.h"
+#include "UnityThreads.h"
 #include "CommandExecuterThread.h"
 #include "MessageDispatcher.h"
 #include "CommandDescriptions.h"
@@ -84,17 +84,19 @@ class RobotProgram
                                           settings.GetString("irc_channel"),
                                           settings.GetString("irc_username"),
                                           settings.GetString("irc_password"),
-                                          MessageDispatcher::chatId,
                                           messageDispatcher.get(),
                                           this));
 
-            commandExecuterThread.reset(new CommandExecuterThread(&robot, ircThread.get(), settings.GetBoolean("show_commands"), this));
+            commandExecuterThread.reset(new CommandExecuterThread(&robot, ircThread.get(), settings.GetBoolean("show_commands"), messageDispatcher.get(), this));
 
             messageDispatcher->SetCommandExecuterThread(commandExecuterThread.get());
 
-            inputThread.reset(new StandardInputThread(MessageDispatcher::inputId, messageDispatcher.get(), this));
+            inputThread.reset(new StandardInputThread(messageDispatcher.get(), this));
 
-////            unityThreads.reset(new UnityThreads(settings.GetInteger("unity_local_port"), this));
+            unityThreads.reset(new UnityThreads(settings.GetInteger("unity_local_port"), this));
+
+            messageDispatcher->SetUnityThreads(unityThreads.get());
+            commandExecuterThread->SetUnityThreads(unityThreads.get());
 
             l.unlock();
 
@@ -140,8 +142,8 @@ class RobotProgram
          if(inputThread)
             inputThread->Stop();
 
-////         if(unityThreads)
-////            unityThreads->Stop();
+         if(unityThreads)
+            unityThreads->Stop();
 
          if(commandExecuterThread)
             commandExecuterThread->Stop();
@@ -158,8 +160,8 @@ class RobotProgram
          if(inputThread)
             inputThread->Join();
 
-////         if(unityThreads)
-////            unityThreads->Join();
+         if(unityThreads)
+            unityThreads->Join();
 
          if(commandExecuterThread)
             commandExecuterThread->Join();
@@ -173,8 +175,8 @@ class RobotProgram
          if(inputThread)
             inputThread->RethrowException();
 
-////         if(unityThreads)
-////            unityThreads->RethrowException();
+         if(unityThreads)
+            unityThreads->RethrowException();
 
          if(commandExecuterThread)
             commandExecuterThread->RethrowException();
@@ -183,7 +185,7 @@ class RobotProgram
       std::unique_ptr<MessageDispatcher> messageDispatcher;
       std::unique_ptr<IrcThread> ircThread;
       std::unique_ptr<StandardInputThread> inputThread;
-////      std::unique_ptr<UnityThreads> unityThreads;
+      std::unique_ptr<UnityThreads> unityThreads;
       std::unique_ptr<CommandExecuterThread> commandExecuterThread;
       int result;
       std::mutex stopLock;

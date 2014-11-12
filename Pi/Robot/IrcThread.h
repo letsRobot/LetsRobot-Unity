@@ -18,13 +18,12 @@ class IrcThread
      public IrcClientObserver
 {
    public:
-      IrcThread(const char * server, uint16_t port, const char * channel, const char * username, const char * password, uint32_t id, MessageObserver * messageObserver, Stoppable * stoppableProgram)
+      IrcThread(const char * server, uint16_t port, const char * channel, const char * username, const char * password, MessageObserver * messageObserver, Stoppable * stoppableProgram)
          : server(server),
            port(port),
            channel(channel),
            username(username),
            password(password),
-           id(id),
            messageObserver(messageObserver),
            stoppableProgram(stoppableProgram)
       {
@@ -89,6 +88,11 @@ class IrcThread
          str += "\001";
 
          SendMessage(str.c_str());
+      }
+
+      const char * GetUsername() const
+      {
+         return username.c_str();
       }
 
    private:
@@ -157,7 +161,7 @@ class IrcThread
          if(to != channel && to != username)
             return;
 
-         messageObserver->NewMessage(id, from, message);
+         messageObserver->NewMessage(true, from, message);
       }
 
       void IrcNotice(const char * from, const char * to, const char * notice)
@@ -178,7 +182,6 @@ class IrcThread
       const std::string channel;
       const std::string username;
       const std::string password;
-      const uint32_t id;
       MessageObserver * const messageObserver;
       Stoppable * const stoppableProgram;
       std::unique_ptr<IrcClient> irc;

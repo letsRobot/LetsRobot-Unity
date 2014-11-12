@@ -11,23 +11,49 @@
 #include <map>
 #include <cassert>
 
+struct CommandReadyForExecution
+{
+   const ActualCommand actualCommand;
+   const std::string user;
+   const uint32_t id;
+
+   CommandReadyForExecution(const ActualCommand & actualCommand, const std::string & user, uint32_t id)
+      : actualCommand(actualCommand),
+        user(user),
+        id(id)
+   { }
+};
+
 class CommandExecuterThread
    : public Thread
 {
    public:
-      CommandExecuterThread(Robot * robot, IrcThread * irc, bool showCommands, Stoppable * stoppableProgram)
+      CommandExecuterThread(Robot * robot, IrcThread * irc, bool showCommands, MessageObserver * messageObserver, Stoppable * stoppableProgram)
          : robot(robot),
            irc(irc),
            showCommands(showCommands),
            showChat(&showChatDummy),
-           stoppableProgram(stoppableProgram)
+           messageObserver(messageObserver),
+           stoppableProgram(stoppableProgram),
+           unity(0),
+           commandCallUnity(&unityDummy),
+           commandId(1)
       {
          assert(robot);
          assert(irc);
+         assert(messageObserver);
          assert(stoppableProgram);
 
          BuildCommandFunctionMap();
          Start();
+      }
+
+      void SetUnityThreads(UnityThreads * unity)
+      {
+         assert(unity);
+
+         this->unity = unity;
+         commandCallUnity = unity;
       }
 
       void SetShowChat(bool * showChat)
@@ -37,11 +63,16 @@ class CommandExecuterThread
          this->showChat = showChat;
       }
 
-      void AddCommand(const ActualCommand & actualCommand)
+      void AddCommand(const ActualCommand & actualCommand, const std::string & user, bool isFromChat)
       {
          assert(&actualCommand);
 
-         commands.Push(actualCommand);
+         commands.Push(CommandReadyForExecution(actualCommand, user, commandId));
+
+         if(unity)
+            unity->SendCommandMessage(user, actualCommand.GetCommandDescriptionString(), actualCommand.GetCommandString(), commandId, isFromChat);
+
+         commandId++;
       }
 
    private:
@@ -67,13 +98,13 @@ class CommandExecuterThread
          }
       }
 
-      void ExecuteCommand(const ActualCommand & actualCommand)
+      void ExecuteCommand(const CommandReadyForExecution & command)
       {
-         assert(&actualCommand);
+         assert(&command);
 
-         const auto commandDescription = actualCommand.GetCommandDescription()->GetString();
+         const auto commandDescription = command.actualCommand.GetCommandDescription()->GetString();
 
-         if(CommandNeedsToCoolDown(actualCommand.GetCommandDescription()))
+         if(CommandNeedsToCoolDown(command.actualCommand.GetCommandDescription()))
             return;
 
          if(showCommands)
@@ -88,8 +119,16 @@ class CommandExecuterThread
 
          auto iCommandFunction = commandFunctions.find(commandDescription);
 
-         if(iCommandFunction != commandFunctions.end())
-            iCommandFunction->second(actualCommand, *robot, *irc, showCommands, *showChat);
+         if(iCommandFunction == commandFunctions.end())
+            return;
+
+         if(unity)
+            unity->SendCommandBeginMessage(command.id);
+
+         iCommandFunction->second(command.actualCommand, *robot, *irc, showCommands, *showChat, *unity, *messageObserver);
+
+         if(unity)
+            unity->SendCommandEndMessage(command.id);
       }
 
       void BuildCommandFunctionMap()
@@ -131,10 +170,15 @@ class CommandExecuterThread
       bool showCommands;
       bool showChatDummy;
       bool * showChat;
+      MessageObserver * const messageObserver;
       Stoppable * const stoppableProgram;
       std::map<std::string, CommandFunctions::CommandFunctionPointer> commandFunctions;
       std::map<std::string, time_t> timesOfLastCommands;
-      ThreadSafeQueue<ActualCommand> commands;
+      ThreadSafeQueue<CommandReadyForExecution> commands;
+      UnityThreads * unity;
+      Unity unityDummy;
+      Unity * commandCallUnity;
+      uint32_t commandId;
 };
 
 #endif

@@ -14,5 +14,4 @@ class ActualCommandParameters //Used in CommandDescriptions.h
       virtual int32_t GetInteger(size_t iParameter) const = 0;
 };
 
-
 #endif

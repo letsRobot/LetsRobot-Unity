@@ -8,11 +8,13 @@
 #include "Robot.h"
 #include "IrcThread.h"
 #include "ActualCommandParameters.h"
+#include "Unity.h"
+#include "MessageObserver.h"
 
 namespace CommandFunctions
 {
-   #define CommandFunctionParameters const ActualCommandParameters & parameters, Robot & robot, IrcThread & irc, bool & showCommands, bool & showChat
-   #define CommandFunctionActualParameters parameters, robot, irc, showCommands, showChat
+   #define CommandFunctionParameters const ActualCommandParameters & parameters, Robot & robot, IrcThread & irc, bool & showCommands, bool & showChat, Unity & unity, MessageObserver & messageObserver
+   #define CommandFunctionActualParameters parameters, robot, irc, showCommands, showChat, unity, messageObserver
    typedef void (*CommandFunctionPointer) (CommandFunctionParameters);
 
    struct Node

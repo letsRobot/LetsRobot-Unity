@@ -12,9 +12,8 @@ class StandardInputThread
    : public Thread
 {
    public:
-      StandardInputThread(uint32_t id, MessageObserver * messageObserver, Stoppable * stoppableProgram)
-         : id(id),
-           messageObserver(messageObserver),
+      StandardInputThread(MessageObserver * messageObserver, Stoppable * stoppableProgram)
+         : messageObserver(messageObserver),
            stoppableProgram(stoppableProgram)
       {
          assert(messageObserver);
@@ -41,7 +40,7 @@ class StandardInputThread
                const auto line = ReadLine();
 
                if(!stopped)
-                  messageObserver->NewMessage(id, "", line.c_str());
+                  messageObserver->NewMessage(false, "", line.c_str());
             }
          }
          catch(...)
@@ -74,7 +73,6 @@ class StandardInputThread
          return "";
       }
 
-      const uint32_t id;
       MessageObserver * const messageObserver;
       Stoppable * const stoppableProgram;
 };

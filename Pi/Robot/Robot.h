@@ -128,6 +128,8 @@ class GenericRobot
 
 #else
 
+   #include <Thread.h>
+
    // The MockRobotSerialPort class is used to test the program without interfacing with a physical robot.
    // It can be turned on by defining UseMockRobot.
    class MockRobotSerialPort
@@ -148,6 +150,8 @@ class GenericRobot
                AddToReads("echo 123456789");
 
             AddToReads("ok");
+
+            Thread::Sleep(1000);
          }
 
          size_t Receive(void * data, size_t nBytes)

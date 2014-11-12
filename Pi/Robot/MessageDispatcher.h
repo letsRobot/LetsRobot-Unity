@@ -7,6 +7,7 @@
 #include "ThreadSafeQueue.h"
 #include "Tokenizer.h"
 #include "CommandExecuterThread.h"
+#include "UnityThreads.h"
 #include <ctime>
 #include <sstream>
 #include <utility>
@@ -16,9 +17,10 @@
 struct Message
 {
    public:
-      Message(const std::string & user = "", const std::string & originalMessage = "")
+      Message(const std::string & user, const std::string & originalMessage, bool isFromChat)
          : user(user),
-           originalMessage(originalMessage)
+           originalMessage(originalMessage),
+           isFromChat(isFromChat)
       {
          assert(&user);
          assert(&originalMessage);
@@ -34,10 +36,16 @@ struct Message
          return originalMessage;
       }
 
+      const bool IsFromChat() const
+      {
+         return isFromChat;
+      }
+
    private:
       const std::string user;
       std::string cleanMessage;
       const std::string originalMessage;
+      bool isFromChat;
 };
 
 // This class receives messages, parses them, and executes the ones that are commands.
@@ -45,13 +53,11 @@ class MessageDispatcher
    : public MessageObserver
 {
    public:
-      static const uint32_t inputId = 0;
-      static const uint32_t chatId  = 1;
-
       MessageDispatcher(CommandDescriptions * commandDescriptions, Users * users, bool showChat)
          : stopped(false),
            commandDescriptions(commandDescriptions),
            commandExecuter(0),
+           unity(0),
            users(users),
            showChat(showChat)
       {
@@ -72,21 +78,27 @@ class MessageDispatcher
          this->commandExecuter = commandExecuter;
       }
 
+      void SetUnityThreads(UnityThreads * unity)
+      {
+         assert(unity);
+
+         this->unity = unity;
+      }
+
       // This function is called by any of the threads that provides the messages whenever they have a new message ready.
       // If the input was entered directly into the program the user parameter is the empty string.
-      void NewMessage(uint32_t id, const std::string & user, const std::string & message)
+      void NewMessage(bool fromChat, const std::string & user, const std::string & message)
       {
-         assert(id == inputId || id == chatId);
          assert(&user);
          assert(&message);
 
-         if(id == chatId && user.empty())
+         if(fromChat && user.empty())
             return;
 
-         if(showChat && id == chatId)
+         if(showChat && fromChat)
             std::cout << "Message from " << user << ": " << message << std::endl;
 
-         messageQueue.Push(Message(user, message));
+         messageQueue.Push(Message(user, message, fromChat));
       }
 
       // Waits for the message queue to become non-empty.
@@ -102,19 +114,21 @@ class MessageDispatcher
                Message message = messageQueue.Pop();
 
                const auto actualCommand = ParseMessage(message.GetMessage());
-               if(!actualCommand.GetCommandDescription())
+               const bool messageIsCommand = actualCommand.GetCommandDescription();
+               const bool executeMessageAsCommand = messageIsCommand && UserMayUseCommand(*actualCommand.GetCommandDescription(), message.GetUser());
+               if(!executeMessageAsCommand)
                {
-                  if(message.GetUser().empty())
+                  if(!message.IsFromChat())
                      std::cout << "Unknown command: " << message.GetMessage() << std::endl;
+
+                  else if(unity)
+                     unity->SendChatMessage(message.GetMessage(), message.GetUser());
 
                   continue;
                }
 
-               if(!UserMayUseCommand(*actualCommand.GetCommandDescription(), message.GetUser()))
-                  continue;
-
                if(commandExecuter)
-                  commandExecuter->AddCommand(actualCommand);
+                  commandExecuter->AddCommand(actualCommand, message.GetUser(), message.IsFromChat());
             }
          }
       }
@@ -144,6 +158,7 @@ class MessageDispatcher
       volatile bool stopped;
       CommandDescriptions * const commandDescriptions;
       CommandExecuterThread * commandExecuter;
+      UnityThreads * unity;
       ThreadSafeQueue<Message> messageQueue;
       Users * const users;
       bool showChat;

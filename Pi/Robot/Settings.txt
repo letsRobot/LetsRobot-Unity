@@ -7,6 +7,8 @@ irc_channel      = #aylobot
 irc_username     = 
 irc_password     = oauth:
 
+unity_local_port = 40000
+
 show_chat        = false
 show_commands    = false
 show_robot       = false
