@@ -84,7 +84,8 @@ public class StreamerThread
          }
          catch(Exception)
          {
-            CloseSocket();
+			Monitor.Exit(streamLock);
+			CloseSocket();
             continue;
          }
       }
