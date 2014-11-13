@@ -11,6 +11,7 @@ public class Robot : MonoBehaviour
 
 	void Start()
 	{
+		server = Constants.IP1;
 		robotMessages = new RobotMessages(server, port);
 	}
 
