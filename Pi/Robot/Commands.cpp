@@ -113,6 +113,7 @@ Command("echo")
    str << "Distance to object: " << distance << "cm.";
 
    irc.SendMessage(str.str().c_str());
+   messageObserver.NewMessage(true, irc.GetUsername(), str.str().c_str());
 }
 
 Lights lights("/dev/i2c-1", 0x04);
