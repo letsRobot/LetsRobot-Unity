@@ -12,7 +12,7 @@ class Thread
            badAlloc(false)
       { }
 
-      virtual ~Thread() noexcept
+      virtual ~Thread()
       {
          Stop();
          Join();

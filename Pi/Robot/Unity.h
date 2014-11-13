@@ -6,7 +6,10 @@
 class Unity
 {
    public:
-      void SendChatMessage(const std::string & /*chatMessage*/, const std::string & /*user*/) { }
+      virtual ~Unity() { }
+
+      virtual void SendChatMessage(const std::string & /*chatMessage*/, const std::string & /*user*/) { }
+      virtual void SendVariableMessage(const std::string & /*variable*/, const std::string /*value*/) { }
 };
 
 #endif

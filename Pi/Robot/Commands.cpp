@@ -108,12 +108,14 @@ Command("close")
 Command("echo")
 {
    robot.Send("p");
+
    const int distance = (0.03448 * robot.GetRobotStatus().echoTime) / 2 + 0.5;
    std::stringstream str;
    str << "Distance to object: " << distance << "cm.";
 
    irc.SendMessage(str.str().c_str());
    messageObserver.NewMessage(true, irc.GetUsername(), str.str().c_str());
+   unity.SendVariableMessage("echo", std::to_string(distance));
 }
 
 Lights lights("/dev/i2c-1", 0x04);
@@ -135,7 +137,7 @@ Command("light #i #w")
       {"purple",  {255, 0,   255}},
       {"magenta", {255, 0,   255}},
       {"cyan",    {0,   255, 255}},
-      {"white",   {255, 255, 255}},
+      {"white",   {255, 255, 255}}
    };
 
    const auto light = parameters.GetInteger(0);

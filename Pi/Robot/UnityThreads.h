@@ -130,6 +130,18 @@ class UnityThreads
          AddMessage(message);
       }
 
+      void SendVariableMessage(const std::string & variable, const std::string value)
+      {
+         std::string message;
+         message += "variable";
+         message += " ";
+         message += variable;
+         message += " ";
+         message += value;
+
+         AddMessage(message);
+      }
+
    private:
       void InputThread()
       {
