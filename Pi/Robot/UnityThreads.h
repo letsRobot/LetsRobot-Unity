@@ -289,7 +289,7 @@ class UnityThreads
             clientSocket->Send(dataZeros,      nBytesPerPackage - nBytesData);
             clientSocket->Send(&magic2,        4);
 
-            packageNumber++;
+            packageNumber--;
             nBytesLeftInMessage -= nBytesData;
          }
       }
