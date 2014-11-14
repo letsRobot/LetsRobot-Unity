@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class Robot : MonoBehaviour
 {
@@ -25,6 +27,7 @@ public class Robot : MonoBehaviour
 		robotMessages.SetServer(server, port);
 
 		UpdateChat();
+		UpdateHud();
 	}
 
 	void UpdateChat()
@@ -58,14 +61,72 @@ public class Robot : MonoBehaviour
 
 		richText += "<color=" + color + ">";
 		richText += message.user;
-		richText += ": ";
-		richText += message.message;
-		
+
+		if(message.message.StartsWith(chatActionPrefix) && message.message.EndsWith(chatActionPostfix))
+		{
+			richText += " ";
+			richText += message.message.Substring(chatActionPrefix.Length, message.message.Length - chatActionPrefix.Length - 1);
+		}
+		else
+		{
+			richText += ": ";
+			richText += message.message;
+		}
+
 		richText += "</color>";
 		richText += "\n";
 
 		return richText;
 	}
 
+	void UpdateHud()
+	{
+		UpdateLeds();
+		UpdateEcho();
+	}
+
+	void UpdateLeds()
+	{
+		for(int i = 0; i < 16; i++)
+		{
+			try
+			{
+				string ledVariable = "led_" + i;
+				string ledValue = robotMessages.GetVariable(ledVariable);
+
+				Tokenizer ledValueTokenizer = new Tokenizer(ledValue, ' ');
+
+				var r = Convert.ToInt32(ledValueTokenizer.GetToken());
+				var g = Convert.ToInt32(ledValueTokenizer.GetToken());
+				var b = Convert.ToInt32(ledValueTokenizer.GetToken());
+
+				UpdateLed(i, r / 255.0f, g / 255.0f, b / 255.0f);
+			}
+			catch(KeyNotFoundException)
+			{ }
+		}
+	}
+
+	void UpdateLed(int led, float r, float g, float b)
+	{
+	}
+
+	void UpdateEcho()
+	{
+		var echo = GameObject.Find("Echo").GetComponent<TextMesh>();
+		int echoCm = 0;
+
+		try
+		{
+			echoCm = Convert.ToInt32(robotMessages.GetVariable("echo"));
+		}
+		catch(KeyNotFoundException)
+		{ }
+
+		echo.text = "" + echoCm + " cm";
+	}
+
 	RobotMessages robotMessages;
+	string chatActionPrefix = "\x0001ACTION";
+	string chatActionPostfix = "\x0001";
 }

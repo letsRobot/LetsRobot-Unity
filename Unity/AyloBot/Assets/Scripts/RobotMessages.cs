@@ -28,7 +28,7 @@ class RobotMessages : RobotMessageReceiver
 	
 	public void NewMessage(string message)
 	{
-			Tokenizer tokenizer = new Tokenizer(message, ' ');
+		Tokenizer tokenizer = new Tokenizer(message, ' ');
 
 		var messageType = tokenizer.GetToken();
 
@@ -66,9 +66,15 @@ class RobotMessages : RobotMessageReceiver
 			SetCommandIsExecuting(commandId, false);
 		}
 
-		else if(messageType == "info")
+		else if(messageType == "variable")
 		{
-			////
+			var variable = tokenizer.GetToken();
+			var value    = tokenizer.GetString();
+
+			lock(messageLock)
+			{
+				variables[variable] = value;
+			}
 		}
 
 		else
@@ -104,6 +110,14 @@ class RobotMessages : RobotMessageReceiver
 		}
 
 		return chatMessages;
+	}
+
+	public string GetVariable(string variable)
+	{
+		lock(messageLock)
+		{
+			return variables[variable];
+		}
 	}
 
 	void AddMessage(InternalRobotMessage message)
@@ -183,4 +197,5 @@ class RobotMessages : RobotMessageReceiver
 	object messageLock = new object();
 	IList<InternalRobotMessage> messages = new List<InternalRobotMessage>();
 	int maxMessageNumber = 100;
+	IDictionary<string, string> variables = new Dictionary<string, string>();
 }
