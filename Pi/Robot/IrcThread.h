@@ -51,35 +51,35 @@ class IrcThread
             irc->Stop();
       }
 
-      void SendMessage(const char * message)
+      void SendMessage(const std::string & message)
       {
-         assert(message);
+         assert(&message);
 
          SendWhisper("", message);
       }
 
-      void SendWhisper(const char * user, const char * message)
+      void SendWhisper(const std::string & user, const std::string & message)
       {
-         assert(user);
-         assert(message);
+         assert(&user);
+         assert(&message);
 
          std::lock_guard<std::mutex> l(ircLock);
          if(irc)
          {
             try
             {
-               if(!*user)
-                  irc->SendMessageToChannel(message);
+               if(user.empty())
+                  irc->SendMessageToChannel(message.c_str());
                else
-                  irc->SendMessageTo(user, message);
+                  irc->SendMessageTo(user.c_str(), message.c_str());
             }
             catch(Exception &) { } // If an exception occurs we ignore it and the message is lost.
          }
       }
 
-      void SendActionMessage(const char * message)
+      void SendActionMessage(const std::string & message)
       {
-         assert(message);
+         assert(&message);
 
          // This is specific for Twitch.
          std::string str;

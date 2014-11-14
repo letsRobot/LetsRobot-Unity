@@ -12,7 +12,8 @@
 // - parameters
 // - robot
 // - irc
-//
+// - unity
+// - messageObserver
 //
 // parameters
 //
@@ -38,7 +39,22 @@
 //
 // The irc object can be used to send messages or actions to the IRC server.
 // It has type IrcThread.
-// To send an ordinary messages, whispers, and actions (/me) can be sent using the functions SendMessage, SendWhisper, and SendActionMessage respectively.
+// Messages, whispers, and actions (/me) can be sent using the functions SendMessage, SendWhisper, and SendActionMessage respectively.
+//
+//
+// unity
+//
+// The unity object can be used to send chat messages and variables to the Unity program.
+// It has type Unity.
+// Chat messages can be sent using the function SendChatMessage while variables can be sent using the function SendVariableMessage.
+//
+//
+// messageObserver
+//
+// The messageObserver object can be used to add a chat message to the chat message queue as if it had come from the actual chat.
+// It has type MessageObserver.
+// Chat messages can be added using the function NewMessage.
+
 
 #include "Commands.h"
 #include "Lights.h"
@@ -56,14 +72,14 @@ Command("/hide #w")
 
 Command("/say #s")
 {
-   irc.SendMessage(parameters.GetString(0));
+   irc.SendMessage(parameters.GetString(0).c_str());
 
    messageObserver.NewMessage(true, irc.GetUsername(), parameters.GetString(0));
 }
 
 Command("/me #s")
 {
-   irc.SendActionMessage(parameters.GetString(0));
+   irc.SendActionMessage(parameters.GetString(0).c_str());
 
    std::string message = "\001ACTION\001";
    message += parameters.GetString(0);
@@ -119,58 +135,47 @@ Command("echo")
 }
 
 Lights lights("/dev/i2c-1", 0x04);
+const auto numberOfLights = 16;
+const uint8_t maxIntensity = 100;
 
 Command("light #i #w")
 {
-   struct Rgb
-   {
-      uint8_t r, g, b;
-   };
-
-   const std::map<std::string, Rgb> colors =
-   {
-      {"black",   {0,   0,   0  }},
-      {"red",     {255, 0,   0  }},
-      {"green",   {0,   255, 0  }},
-      {"blue",    {0,   0,   255}},
-      {"yellow",  {255, 255,   0}},
-      {"purple",  {255, 0,   255}},
-      {"magenta", {255, 0,   255}},
-      {"cyan",    {0,   255, 255}},
-      {"white",   {255, 255, 255}}
-   };
-
    const auto light = parameters.GetInteger(0);
-   const std::string color = parameters.GetWord(1);
-   const uint8_t maxIntensity = 100;
+   const auto color = parameters.GetWord(1);
 
-   const auto iColor = colors.find(color);
-
-   if(iColor == colors.end())
+   if(light >= numberOfLights)
       return;
 
-   auto rgb = iColor->second;
+   Light(CommandFunctionActualParameters, light, color);
+}
 
-   rgb.r = rgb.r * (double)maxIntensity / 255 + 0.5;
-   rgb.g = rgb.g * (double)maxIntensity / 255 + 0.5;
-   rgb.b = rgb.b * (double)maxIntensity / 255 + 0.5;
+Command("light all #w")
+{
+   const auto color = parameters.GetWord(0);
 
-   lights.SetLight(light, rgb.r, rgb.g, rgb.b);
-
-//   std::cout << "LED " << light << " is now " << color << "." << std::endl;
-//   std::cout << "LED " << light << " now has RGB color " << (int)rgb.r << " " << (int)rgb.g << " " << (int)rgb.b <<  "." << std::endl;
+   Light(CommandFunctionActualParameters, 255, color);
 }
 
 Command("light #i #i #i #i")
 {
    const auto light = parameters.GetInteger(0);
-   const auto r = parameters.GetInteger(1);
-   const auto g = parameters.GetInteger(2);
-   const auto b = parameters.GetInteger(3);
+   const auto r     = parameters.GetInteger(1);
+   const auto g     = parameters.GetInteger(2);
+   const auto b     = parameters.GetInteger(3);
 
-   lights.SetLight(light, r, g, b);
+   if(light >= numberOfLights)
+      return;
 
-//   std::cout << "LED " << parameters.GetInteger(0) << " now has RGB color " << parameters.GetInteger(1) << " " << parameters.GetInteger(2) << " " << parameters.GetInteger(3) <<  "." << std::endl;
+   Light(CommandFunctionActualParameters, light, r, g, b);
+}
+
+Command("light all #i #i #i")
+{
+   const auto r = parameters.GetInteger(0);
+   const auto g = parameters.GetInteger(1);
+   const auto b = parameters.GetInteger(2);
+
+   Light(CommandFunctionActualParameters, 255, r, g, b);
 }
 
 void ExecuteShowHide(CommandFunctionParameters, bool showHide)
@@ -191,4 +196,63 @@ void ExecuteShowHide(CommandFunctionParameters, bool showHide)
 
    if(all || parameter == "robot_debug")
       robot.ShowDebug(showHide);
+}
+
+void Light(CommandFunctionParameters, int light, const std::string & color)
+{
+   struct Rgb
+   {
+      uint8_t r, g, b;
+   };
+
+   const std::map<std::string, Rgb> colors =
+   {
+      {"black",   {0,   0,   0  }},
+      {"red",     {255, 0,   0  }},
+      {"green",   {0,   255, 0  }},
+      {"blue",    {0,   0,   255}},
+      {"yellow",  {255, 255,   0}},
+      {"purple",  {255, 0,   255}},
+      {"magenta", {255, 0,   255}},
+      {"cyan",    {0,   255, 255}},
+      {"white",   {255, 255, 255}}
+   };
+
+   const auto iColor = colors.find(color);
+
+   if(iColor == colors.end())
+      return;
+
+   auto rgb = iColor->second;
+
+   rgb.r = rgb.r * (double)maxIntensity / 255 + 0.5;
+   rgb.g = rgb.g * (double)maxIntensity / 255 + 0.5;
+   rgb.b = rgb.b * (double)maxIntensity / 255 + 0.5;
+
+   SetLight(CommandFunctionActualParameters, light, rgb.r, rgb.g, rgb.b);
+}
+
+void Light(CommandFunctionParameters, int light, int r, int g, int b)
+{
+   SetLight(CommandFunctionActualParameters, light, r, g, b);
+}
+
+void SetLight(CommandFunctionParameters, int light, int r, int g, int b)
+{
+   lights.SetLight(light, r, g, b);
+
+   std::string variable = "led_";
+   if(light != 255)
+      variable += std::to_string(light);
+   else
+      variable += "all";
+
+   std::string value;
+   value += std::to_string(r);
+   value += " ";
+   value += std::to_string(g);
+   value += " ";
+   value += std::to_string(b);
+
+   unity.SendVariableMessage(variable, value);
 }

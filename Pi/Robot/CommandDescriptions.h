@@ -212,16 +212,16 @@ class ActualCommand
          return parts[iPart];
       }
 
-      const char * GetWord(size_t iParameter) const
+      std::string GetWord(size_t iParameter) const
       {
          size_t iPart;
          if(GetIndexOfPartOfParameter(iParameter, CommandPartType::Word, iPart))
-            return parts[iPart].str.c_str();
+            return parts[iPart].str;
 
          return "";
       }
 
-      const char * GetString(size_t iParameter) const
+      std::string GetString(size_t iParameter) const
       {
          size_t iPart;
          if(GetIndexOfPartOfParameter(iParameter, CommandPartType::String, iPart))

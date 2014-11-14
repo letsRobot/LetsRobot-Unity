@@ -105,8 +105,18 @@ led #i #w
 
 0
 0
+light all #w
+led all #w
+
+0
+0
 light #i #i #i #i
 led #i #i #i #i
+
+0
+0
+light all #i #i #i
+led all #i #i #i
 
 0
 0
