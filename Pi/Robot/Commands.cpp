@@ -241,18 +241,33 @@ void SetLight(CommandFunctionParameters, int light, int r, int g, int b)
 {
    lights.SetLight(light, r, g, b);
 
-   std::string variable = "led_";
-   if(light != 255)
-      variable += std::to_string(light);
+   int iLightFirst;
+   int iLightEnd;
+
+   if(light == 255)
+   {
+      iLightFirst = 0;
+      iLightEnd = numberOfLights;
+   }
    else
-      variable += "all";
+   {
+      iLightFirst = light;
+      iLightEnd   = light + 1;
+   }
 
-   std::string value;
-   value += std::to_string(r);
-   value += " ";
-   value += std::to_string(g);
-   value += " ";
-   value += std::to_string(b);
+   for(int iLight = iLightFirst; iLight != iLightEnd; iLight++)
+   {
+      std::string variable;
+      variable += "led_";
+      variable += std::to_string(iLight);
 
-   unity.SendVariableMessage(variable, value);
+      std::string value;
+      value += std::to_string(r);
+      value += " ";
+      value += std::to_string(g);
+      value += " ";
+      value += std::to_string(b);
+
+      unity.SendVariableMessage(variable, value);
+   }
 }
