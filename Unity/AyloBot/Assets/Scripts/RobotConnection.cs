@@ -67,17 +67,9 @@ public class RobotConnection
 						{
 							function();
 						}
-						catch(Exception e)
+						catch(Exception)
 						{
 							bool ignoreException = false;
-
-							if(e.GetBaseException() is SocketException)
-							{
-								var socketException = (SocketException)e.GetBaseException();
-
-								if(socketException.ErrorCode == 10060) // If we timed out.
-									ignoreException = true;
-							}
 
 							if(!ignoreException)
 								ResetConnection(ref outputLock, ref hasConnected, ref otherHasConnected);
@@ -99,6 +91,12 @@ public class RobotConnection
 		int nBytesRead = 0;
 		while(nBytesRead != PackageAssembler.packageSize)
 		{
+			if(stopped)
+				return;
+
+			if(!socket.GetStream().DataAvailable)
+				continue;
+
 			var nBytesReadThisTime = socket.GetStream().Read(package, nBytesRead, PackageAssembler.packageSize - nBytesRead);
 
 			nBytesRead += nBytesReadThisTime;
