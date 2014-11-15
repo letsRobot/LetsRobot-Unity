@@ -226,10 +226,6 @@ void Light(CommandFunctionParameters, int light, const std::string & color)
 
    auto rgb = iColor->second;
 
-   rgb.r = rgb.r * (double)maxIntensity / 255 + 0.5;
-   rgb.g = rgb.g * (double)maxIntensity / 255 + 0.5;
-   rgb.b = rgb.b * (double)maxIntensity / 255 + 0.5;
-
    SetLight(CommandFunctionActualParameters, light, rgb.r, rgb.g, rgb.b);
 }
 
@@ -240,7 +236,11 @@ void Light(CommandFunctionParameters, int light, int r, int g, int b)
 
 void SetLight(CommandFunctionParameters, int light, int r, int g, int b)
 {
-   lights.SetLight(light, r, g, b);
+   const auto lightR = r * (double)maxIntensity / 255 + 0.5;
+   const auto lightG = g * (double)maxIntensity / 255 + 0.5;
+   const auto lightB = b * (double)maxIntensity / 255 + 0.5;
+
+   lights.SetLight(light, lightR, lightG, lightB);
 
    int iLightFirst;
    int iLightEnd;
