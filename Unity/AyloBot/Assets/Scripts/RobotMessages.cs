@@ -9,6 +9,12 @@ public struct RobotChatMessage
 	public bool isExecuting;
 }
 
+public struct RobotCommand
+{
+	public string command;
+	public string commandDescription;
+}
+
 class RobotMessages : RobotMessageReceiver
 {
 	public RobotMessages(string server, int port)
@@ -51,13 +57,10 @@ class RobotMessages : RobotMessageReceiver
 
 			var internalRobotMessage = new InternalRobotMessage(user, command, commandDescription, commandId);
 
-			lock(messageLock)
-			{
-				commands.Add(internalRobotMessage);
-			}
+			AddCommand(internalRobotMessage);
 
 			if(isFromChat)
-				AddMessage(new InternalRobotMessage(user, command, commandDescription, commandId));
+				AddMessage(internalRobotMessage);
 		}
 
 		else if(messageType == "command_begin")
@@ -79,10 +82,7 @@ class RobotMessages : RobotMessageReceiver
 			var variable = tokenizer.GetToken();
 			var value    = tokenizer.GetString();
 
-			lock(messageLock)
-			{
-				variables[variable] = value;
-			}
+			SetVariable(variable, value);
 		}
 
 		else
@@ -98,36 +98,47 @@ class RobotMessages : RobotMessageReceiver
 
 	public IList<RobotChatMessage> GetChatMessages()
 	{
-		var returnChatMessages = new List<RobotChatMessage>();
+		var copyOfChatMessages = new List<RobotChatMessage>();
 
-		lock(messageLock)
+		lock(chatMessagesLock)
 		{
 			foreach(var message in chatMessages)
 			{
-				RobotChatMessage chatMessage = new RobotChatMessage();
+				var chatMessage         = new RobotChatMessage();
 				chatMessage.user        = message.user;
 				chatMessage.message     = message.message;
 				chatMessage.isCommand   = message.isCommand;
 				chatMessage.isExecuting = message.isExecuting;
 
-				returnChatMessages.Add(chatMessage);
+				copyOfChatMessages.Add(chatMessage);
 			}
 		}
 
-		return returnChatMessages;
+		return copyOfChatMessages;
 	}
 
-	public string GetVariable(string variable)
+	public IDictionary<string, string> GetVariables()
 	{
-		lock(messageLock)
+		lock(variablesLock)
 		{
-			return variables[variable];
+			return new Dictionary<string, string>(variables);
+		}
+	}
+
+	public IList<RobotCommand> GetCommands()
+	{
+		lock(commandsLock)
+		{
+			IList<RobotCommand> returnCommands = commands;
+			commands = new List<RobotCommand>();
+
+			return returnCommands;
 		}
 	}
 
 	void AddMessage(InternalRobotMessage message)
 	{
-		lock(messageLock)
+		lock(chatMessagesLock)
 		{
 			chatMessages.Add(message);
 		}
@@ -135,27 +146,47 @@ class RobotMessages : RobotMessageReceiver
 		TrimChatMessages();
 	}
 
+	void AddCommand(InternalRobotMessage internalRobotMessage)
+	{
+		lock(commandsLock)
+		{
+			var command                = new RobotCommand();
+			command.command            = internalRobotMessage.message;
+			command.commandDescription = internalRobotMessage.commandDescription;
+
+			commands.Add(command);
+		}
+	}
+
 	void SetCommandIsExecuting(int commandId, bool isExecuting)
 	{
-		lock(messageLock)
+		lock(commandsLock)
 		{
 			for(int i = 0; i < chatMessages.Count; i++)
 			{
 				var message = chatMessages[i];
-
+				
 				if(message.commandId == commandId)
 					message.isExecuting = isExecuting;
 				else
 					message.isExecuting = false;
-
+				
 				chatMessages[i] = message;
 			}
 		}
 	}
 
+	void SetVariable(string variable, string value)
+	{
+		lock(variablesLock)
+		{
+			variables[variable] = value;
+		}
+	}
+
 	void TrimChatMessages()
 	{
-		lock(messageLock)
+		lock(chatMessagesLock)
 		{
 			while(chatMessages.Count > maxMessageNumber)
 				chatMessages.RemoveAt(0);
@@ -196,9 +227,11 @@ class RobotMessages : RobotMessageReceiver
 	}
 
 	RobotConnection connection;
-	object messageLock = new object();
-	int maxMessageNumber = 100;
+	object chatMessagesLock                  = new object();
+	object commandsLock                      = new object();
+	object variablesLock                     = new object();
+	int maxMessageNumber                     = 100;
 	IList<InternalRobotMessage> chatMessages = new List<InternalRobotMessage>();
-	IList<InternalRobotMessage> commands = new List<InternalRobotMessage>();
-	IDictionary<string, string> variables = new Dictionary<string, string>();
+	IList<RobotCommand> commands             = new List<RobotCommand>();
+	IDictionary<string, string> variables    = new Dictionary<string, string>();
 }

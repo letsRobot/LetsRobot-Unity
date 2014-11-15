@@ -26,8 +26,17 @@ public class Robot : MonoBehaviour
 	{
 		robotMessages.SetServer(server, port);
 
+		variables = robotMessages.GetVariables();
+		robotStuff.Update(variables);
+		DispatchCommands();
 		UpdateChat();
 		UpdateHud();
+	}
+
+	void DispatchCommands()
+	{
+		foreach(var command in robotMessages.GetCommands())
+			robotStuff.Command(command, variables);
 	}
 
 	void UpdateChat()
@@ -87,12 +96,12 @@ public class Robot : MonoBehaviour
 
 	void UpdateLeds()
 	{
-		for(int i = 0; i < 16; i++)
+		for(int iLed = 0; iLed < 16; iLed++)
 		{
 			try
 			{
-				string ledVariable = "led_" + i;
-				string ledValue = robotMessages.GetVariable(ledVariable);
+				string ledVariable = "led_" + iLed;
+				string ledValue = variables[ledVariable];
 
 				Tokenizer ledValueTokenizer = new Tokenizer(ledValue, ' ');
 
@@ -100,15 +109,17 @@ public class Robot : MonoBehaviour
 				var g = Convert.ToInt32(ledValueTokenizer.GetToken());
 				var b = Convert.ToInt32(ledValueTokenizer.GetToken());
 
-				UpdateLed(i, r / 255.0f, g / 255.0f, b / 255.0f);
+				UpdateLed(iLed, r / 255.0f, g / 255.0f, b / 255.0f);
 			}
 			catch(KeyNotFoundException)
 			{ }
 		}
 	}
 
-	void UpdateLed(int led, float r, float g, float b)
+	void UpdateLed(int iLed, float r, float g, float b)
 	{
+		var led = GameObject.Find("LED" + iLed).GetComponent<MeshRenderer>();
+		led.material.color = new Color(r, g, b);
 	}
 
 	void UpdateEcho()
@@ -118,7 +129,7 @@ public class Robot : MonoBehaviour
 
 		try
 		{
-			echoCm = Convert.ToInt32(robotMessages.GetVariable("echo"));
+			echoCm = Convert.ToInt32(variables["echo"]);
 		}
 		catch(KeyNotFoundException)
 		{ }
@@ -127,6 +138,8 @@ public class Robot : MonoBehaviour
 	}
 
 	RobotMessages robotMessages;
+	RobotStuff robotStuff = new RobotStuff();
+	IDictionary<string, string> variables;
 	string chatActionPrefix = "\x0001ACTION";
 	string chatActionPostfix = "\x0001";
 }
