@@ -24,7 +24,7 @@
 # <blank line>
 #
 #
-# Make sure the file ends with a blank line.
+# Make sure the file ends with two blank lines.
 
 0
 0
@@ -121,3 +121,4 @@ led all #i #i #i
 0
 0
 barrel roll
+
