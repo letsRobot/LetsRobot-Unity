@@ -26,7 +26,7 @@ public class RobotConnection
 
 	public void SetServer(string server, int port)
 	{
-		lock(connectingLock)
+		lock(serverPortLock)
 		{
 			this.server = server;
 			this.port = port;
@@ -95,12 +95,18 @@ public class RobotConnection
 
 	void InputFunction()
 	{
-		if(!socket.GetStream().DataAvailable || ! socket.GetStream().CanRead)
-			return;
+		byte[] package = new byte[PackageAssembler.packageSize];
 
-		const int packageSize = PackageAssembler.packageSize;
-		byte[] package = new byte[packageSize];
-		socket.GetStream().Read(package, 0, packageSize);
+		int nBytesRead = 0;
+		while(nBytesRead != PackageAssembler.packageSize)
+		{
+			var nBytesReadThisTime = socket.GetStream().Read(package, nBytesRead, PackageAssembler.packageSize - nBytesRead);
+
+			if(nBytesReadThisTime == 0)
+				throw new Exception();
+
+			nBytesRead += nBytesReadThisTime;
+		}
 
 		packageAssembler.AddPackage(package);
 
@@ -135,8 +141,13 @@ public class RobotConnection
 					try
 					{
 						socket = new TcpClient();
-						var asyncResult = socket.BeginConnect(server, port, null, null);
-						asyncResult.AsyncWaitHandle.WaitOne(5000);
+
+						IAsyncResult asyncResult;
+						lock(serverPortLock)
+						{
+							asyncResult = socket.BeginConnect(server, port, null, null);
+						}
+						asyncResult.AsyncWaitHandle.WaitOne(1000);
 
 						if(socket.Connected)
 							socket.EndConnect(asyncResult);
@@ -179,5 +190,6 @@ public class RobotConnection
 	object connectingLock = new object();
 	object inputLock = new object();
 	object outputLock = new object();
+	object serverPortLock = new object();
 	PackageAssembler packageAssembler = new PackageAssembler();
 }
