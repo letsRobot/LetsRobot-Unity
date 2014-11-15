@@ -1,5 +1,4 @@
-﻿using UnityEngine;////
-using System;
+﻿using System;
 using System.Threading;
 using System.Net.Sockets;
 using System.IO;
@@ -102,9 +101,6 @@ public class RobotConnection
 		{
 			var nBytesReadThisTime = socket.GetStream().Read(package, nBytesRead, PackageAssembler.packageSize - nBytesRead);
 
-			if(nBytesReadThisTime == 0)
-				throw new Exception();
-
 			nBytesRead += nBytesReadThisTime;
 		}
 
@@ -126,7 +122,7 @@ public class RobotConnection
 	{
 		lock(connectingLock)
 		{
-			if(otherHasConnected)
+			if(otherHasConnected) 
 				return;
 
 			lock(otherLock)
