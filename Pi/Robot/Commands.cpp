@@ -81,8 +81,9 @@ Command("/me #s")
 {
    irc.SendActionMessage(parameters.GetString(0).c_str());
 
-   std::string message = "\001ACTION\001";
+   std::string message = "\001ACTION";
    message += parameters.GetString(0);
+   message += "\001";
    messageObserver.NewMessage(true, irc.GetUsername(), message);
 }
 
