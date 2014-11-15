@@ -49,7 +49,15 @@ class RobotMessages : RobotMessageReceiver
 			var commandDescription     = tokenizer.GetString(commandDescriptionSize);
 			var command                = tokenizer.GetString();
 
-			AddMessage(new InternalRobotMessage(user, command, commandDescription, commandId, isFromChat));
+			var internalRobotMessage = new InternalRobotMessage(user, command, commandDescription, commandId);
+
+			lock(messageLock)
+			{
+				commands.Add(internalRobotMessage);
+			}
+
+			if(isFromChat)
+				AddMessage(new InternalRobotMessage(user, command, commandDescription, commandId));
 		}
 
 		else if(messageType == "command_begin")
@@ -85,31 +93,28 @@ class RobotMessages : RobotMessageReceiver
 	{
 		this.maxMessageNumber = maxMessageNumber;
 
-		TrimMessages();
+		TrimChatMessages();
 	}
 
 	public IList<RobotChatMessage> GetChatMessages()
 	{
-		var chatMessages = new List<RobotChatMessage>();
+		var returnChatMessages = new List<RobotChatMessage>();
 
 		lock(messageLock)
 		{
-			foreach(var message in messages)
+			foreach(var message in chatMessages)
 			{
-				if(!message.isFromChat)
-					continue;
-
 				RobotChatMessage chatMessage = new RobotChatMessage();
 				chatMessage.user        = message.user;
 				chatMessage.message     = message.message;
 				chatMessage.isCommand   = message.isCommand;
 				chatMessage.isExecuting = message.isExecuting;
 
-				chatMessages.Add(chatMessage);
+				returnChatMessages.Add(chatMessage);
 			}
 		}
 
-		return chatMessages;
+		return returnChatMessages;
 	}
 
 	public string GetVariable(string variable)
@@ -124,36 +129,36 @@ class RobotMessages : RobotMessageReceiver
 	{
 		lock(messageLock)
 		{
-			messages.Add(message);
+			chatMessages.Add(message);
 		}
 
-		TrimMessages();
+		TrimChatMessages();
 	}
 
 	void SetCommandIsExecuting(int commandId, bool isExecuting)
 	{
 		lock(messageLock)
 		{
-			for(int i = 0; i < messages.Count; i++)
+			for(int i = 0; i < chatMessages.Count; i++)
 			{
-				var message = messages[i];
+				var message = chatMessages[i];
 
 				if(message.commandId == commandId)
 					message.isExecuting = isExecuting;
 				else
 					message.isExecuting = false;
 
-				messages[i] = message;
+				chatMessages[i] = message;
 			}
 		}
 	}
 
-	void TrimMessages()
+	void TrimChatMessages()
 	{
 		lock(messageLock)
 		{
-			while(messages.Count > maxMessageNumber)
-				messages.RemoveAt(0);
+			while(chatMessages.Count > maxMessageNumber)
+				chatMessages.RemoveAt(0);
 		}
 	}
 
@@ -166,19 +171,17 @@ class RobotMessages : RobotMessageReceiver
 			commandDescription = "";
 			commandId          = 0;
 			isCommand          = false;
-			isFromChat         = true;
 			isExecuting        = false;
 			newMessage         = false;
 		}
 
-		public InternalRobotMessage(string user, string message, string commandDescription, int commandId, bool isFromChat)
+		public InternalRobotMessage(string user, string message, string commandDescription, int commandId)
 		{
 			this.user               = user;
 			this.message            = message;
 			this.commandDescription = commandDescription;
 			this.commandId          = commandId;
 			isCommand               = true;
-			this.isFromChat         = isFromChat;
 			isExecuting             = false;
 			newMessage              = false;
 		}
@@ -188,14 +191,14 @@ class RobotMessages : RobotMessageReceiver
 		public string commandDescription;
 		public int commandId;
 		public bool isCommand;
-		public bool isFromChat;
 		public bool isExecuting;
 		public bool newMessage;
 	}
 
 	RobotConnection connection;
 	object messageLock = new object();
-	IList<InternalRobotMessage> messages = new List<InternalRobotMessage>();
 	int maxMessageNumber = 100;
+	IList<InternalRobotMessage> chatMessages = new List<InternalRobotMessage>();
+	IList<InternalRobotMessage> commands = new List<InternalRobotMessage>();
 	IDictionary<string, string> variables = new Dictionary<string, string>();
 }
