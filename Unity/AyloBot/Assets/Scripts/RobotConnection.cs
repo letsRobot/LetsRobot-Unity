@@ -79,8 +79,6 @@ public class RobotConnection
 						ResetConnection(ref outputLock, ref hasConnected, ref otherHasConnected);
 				}
 			}
-
-			Thread.Sleep(100);
 		}
 	}
 
@@ -95,7 +93,10 @@ public class RobotConnection
 				return;
 
 			if(!socket.GetStream().DataAvailable)
+			{
+				Thread.Sleep(1);
 				continue;
+			}
 
 			var nBytesReadThisTime = socket.GetStream().Read(package, nBytesRead, PackageAssembler.packageSize - nBytesRead);
 
