@@ -66,7 +66,7 @@ class StandardInputThread
 
             if(c == '\n') // Return after a new line character.
                return line;
-            else if(c != '\r') // Add any character to the linethat is not a new line or a carriage return.
+            else if(c != '\r') // Add any character to the line that is not a new line or a carriage return.
                line += c;
          }
 

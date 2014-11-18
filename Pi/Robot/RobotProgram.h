@@ -93,7 +93,7 @@ class RobotProgram
 
             inputThread.reset(new StandardInputThread(messageDispatcher.get(), this));
 
-            unityThreads.reset(new UnityThreads(settings.GetInteger("unity_local_port"), this));
+            unityThreads.reset(new UnityThreads(settings.GetInteger("unity_local_port"), this, messageDispatcher.get()));
 
             messageDispatcher->SetUnityThreads(unityThreads.get());
             commandExecuterThread->SetUnityThreads(unityThreads.get());

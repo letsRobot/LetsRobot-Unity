@@ -4,11 +4,14 @@
 #include "Unity.h"
 #include "Stoppable.h"
 #include "ThreadSafeQueue.h"
+#include "PackageAssembler.h"
+#include "MessageObserver.h"
 #include <TcpSocket.h>
 #include <cstdio>
 #include <string>
 #include <thread>
 #include <mutex>
+#include <ctime>
 #include <exception>
 #include <memory>
 #include <cassert>
@@ -20,7 +23,7 @@ class UnityThreads
    : public Unity
 {
    public:
-      UnityThreads(uint16_t port, Stoppable * stoppableProgram)
+      UnityThreads(uint16_t port, Stoppable * stoppableProgram, MessageObserver * messageObserver)
       : stopped(false),
         inputHasConnected(false),
         outputHasConnected(false),
@@ -29,9 +32,12 @@ class UnityThreads
         stoppableProgram(stoppableProgram),
         messageId(0),
         nBytesReceived(0),
-        port(port)
+        port(port),
+        messageObserver(messageObserver),
+        timeOfLastHello(time(0))
       {
          assert(stoppableProgram);
+         assert(messageObserver);
 
          const auto input =   [this]()
                               {
@@ -178,7 +184,13 @@ class UnityThreads
                {
                   ResetConnection(otherLock, hasConnected, otherHasConnected);
                }
-               Thread::Sleep(100);
+               catch(BadPackageException &)
+               {
+                  std::cout << "Bad package." << std::endl;////
+                  ResetConnection(otherLock, hasConnected, otherHasConnected);
+               }
+
+               Thread::Sleep(10);
             }
          }
          catch(...)
@@ -252,6 +264,8 @@ class UnityThreads
 
             SendMessage(message);
          }
+
+         SendHello();
       }
 
       // Package format
@@ -285,11 +299,11 @@ class UnityThreads
 
          while(nBytesLeftInMessage != 0)
          {
-            const uint32_t magic1    = 0xaaaa5555;
-            const uint32_t magic2    = 0xaa55aa55;
-            const auto nBytesData    = nBytesLeftInMessage >= nBytesPerPackage ? nBytesPerPackage : nBytesLeftInMessage;
-            const auto data          = &message[message.length() - nBytesLeftInMessage];
-            const char dataZeros[47] = {0};
+            const uint32_t magic1                  = 0xaaaa5555;
+            const uint32_t magic2                  = 0xaa55aa55;
+            const auto nBytesData                  = nBytesLeftInMessage >= nBytesPerPackage ? nBytesPerPackage : nBytesLeftInMessage;
+            const auto data                        = &message[message.length() - nBytesLeftInMessage];
+            const char dataZeros[nBytesPerPackage] = {0};
 
             assert(nBytesData == nBytesPerPackage || nBytesLeftInMessage < nBytesPerPackage);
 
@@ -306,11 +320,21 @@ class UnityThreads
          }
       }
 
+      void SendHello()
+      {
+         const auto secondsSinceLastHello = difftime(time(0), timeOfLastHello);
+
+         if(secondsSinceLastHello >= 5)
+         {
+            SendMessage("hello");
+            timeOfLastHello = time(0);
+         }
+      }
+
       void ReceiveMessages()
       {
          assert(clientSocket);
 
-         const uint32_t packageSize = 64;
          uint8_t package[packageSize];
 
          nBytesReceived = 0;
@@ -322,22 +346,16 @@ class UnityThreads
             }
             catch(TimedOutTcpSocketException &)
             {
-               Thread::Sleep(500);
+               Thread::Sleep(100);
             }
 
-         std::string message = ParsePackage(package);
-         //// send message til MessageDispatcher
-      }
+            packageAssembler.AddPackage(package);
 
-      std::string ParsePackage(const uint8_t * package)
-      {
-         assert(package);
-
-         std::string message;
-
-         ////
-
-         return std::move(message);
+            if(packageAssembler.FullMessageWasReceived())
+            {
+               if(packageAssembler.GetMessage() != "hello")
+                  messageObserver->NewMessage(false, "", packageAssembler.GetMessage());
+            }
       }
 
       volatile bool stopped;
@@ -358,6 +376,10 @@ class UnityThreads
       uint32_t messageId;
       uint32_t nBytesReceived;
       uint16_t port;
+      const uint32_t packageSize = 64;
+      PackageAssembler packageAssembler;
+      MessageObserver * const messageObserver;
+      time_t timeOfLastHello;
 };
 
 #endif
