@@ -51,6 +51,9 @@ class PackageAssembler
 
          lastMessageId     = messageId;
          lastPackageNumber = packageNumber;
+
+         if(fullMessageReceived)
+            message.resize(strlen(message.c_str()));
       }
 
       bool FullMessageWasReceived() const
