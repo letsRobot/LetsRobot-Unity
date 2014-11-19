@@ -27,7 +27,7 @@ public class Robot : MonoBehaviour
 		robotMessages.SetServer(server, port);
 
 		variables = robotMessages.GetVariables();
-		robotStuff.Update(variables);
+		robotStuff.Update(variables, robotMessages);
 		DispatchCommands();
 		UpdateChat();
 		UpdateHud();
@@ -36,7 +36,7 @@ public class Robot : MonoBehaviour
 	void DispatchCommands()
 	{
 		foreach(var command in robotMessages.GetCommands())
-			robotStuff.Command(command, variables);
+			robotStuff.Command(command, variables, robotMessages);
 	}
 
 	void UpdateChat()
@@ -124,22 +124,21 @@ public class Robot : MonoBehaviour
 
 	void UpdateEcho()
 	{
-		var echo = GameObject.Find("Echo").GetComponent<TextMesh>();
-		int echoCm = 0;
-
 		try
 		{
-			echoCm = Convert.ToInt32(variables["echo"]);
+			var echoCm = Convert.ToInt32(variables["echo"]);
+			var echo = GameObject.Find("Echo").GetComponent<TextMesh>();
+			echo.text = "" + echoCm + " cm";
 		}
 		catch(KeyNotFoundException)
-		{ }
-
-		echo.text = "" + echoCm + " cm";
+		{
+			// If the "echo" variable has not been set we do not update the text .
+		}
 	}
 
 	RobotMessages robotMessages;
 	RobotStuff robotStuff = new RobotStuff();
 	IDictionary<string, string> variables;
-	string chatActionPrefix = "\x0001ACTION";
+	string chatActionPrefix = "\x0001ACTION"; // This is what Twitch puts before and after a /me message.
 	string chatActionPostfix = "\x0001";
 }

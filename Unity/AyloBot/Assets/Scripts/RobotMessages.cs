@@ -15,7 +15,7 @@ public struct RobotCommand
 	public string commandDescription;
 }
 
-class RobotMessages : RobotMessageReceiver
+class RobotMessages : RobotMessageReceiver, RobotMessageSender
 {
 	public RobotMessages(string server, int port)
 	{
@@ -85,6 +85,9 @@ class RobotMessages : RobotMessageReceiver
 			SetVariable(variable, value);
 		}
 
+		else if(messageType == "hello")
+		{ }
+
 		else
 			throw new Exception();
 	}
@@ -134,6 +137,11 @@ class RobotMessages : RobotMessageReceiver
 
 			return returnCommands;
 		}
+	}
+
+	public void SendMessage(string message)
+	{
+		connection.SendMessage(message);
 	}
 
 	void AddMessage(InternalRobotMessage message)
