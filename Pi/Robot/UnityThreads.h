@@ -234,7 +234,7 @@ class UnityThreads
             }
             catch(TimedOutTcpSocketException &)
             {
-               Thread::Sleep(500);
+               Thread::Sleep(100);
             }
          }
 
@@ -346,7 +346,7 @@ class UnityThreads
             }
             catch(TimedOutTcpSocketException &)
             {
-               Thread::Sleep(100);
+               Thread::Sleep(10);
             }
 
             packageAssembler.AddPackage(package);

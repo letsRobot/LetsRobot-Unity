@@ -88,7 +88,7 @@ class CommandExecuterThread
                   ExecuteCommand(command);
                }
 
-               Thread::Sleep(100);
+               Thread::Sleep(10);
             }
          }
          catch(...)

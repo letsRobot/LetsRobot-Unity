@@ -58,7 +58,7 @@ class StandardInputThread
          {
             if(!std::cin.rdbuf()->in_avail()) // Wait for input to become available. Using in_avail() in this way is not portable and may not even work in GCC in the future.
             {
-               Thread::Sleep(100);
+               Thread::Sleep(10);
                continue;
             }
 
