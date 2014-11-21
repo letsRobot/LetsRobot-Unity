@@ -73,6 +73,10 @@
 
 10
 0
+/open quest #i
+
+10
+0
 /remove quest #i
 
 0

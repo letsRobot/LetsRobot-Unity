@@ -28,8 +28,11 @@ class Tokenizer
 	{
 		if(!HasMore())
 			throw new Exception();
-		
-		return str.Substring(position);
+
+		var stringBegin = position;
+		position = str.Length;
+
+		return str.Substring(stringBegin);
 	}
 	
 	public string GetString(int nChars)

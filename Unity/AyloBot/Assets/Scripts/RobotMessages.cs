@@ -9,12 +9,6 @@ public struct RobotChatMessage
 	public bool isExecuting;
 }
 
-public struct RobotCommand
-{
-	public string command;
-	public string commandDescription;
-}
-
 class RobotMessages : RobotMessageReceiver, RobotMessageSender
 {
 	public RobotMessages(string server, int port)
@@ -158,10 +152,7 @@ class RobotMessages : RobotMessageReceiver, RobotMessageSender
 	{
 		lock(commandsLock)
 		{
-			var command                = new RobotCommand();
-			command.command            = internalRobotMessage.message;
-			command.commandDescription = internalRobotMessage.commandDescription;
-
+			var command = new RobotCommand(internalRobotMessage.commandDescription, internalRobotMessage.message);
 			commands.Add(command);
 		}
 	}

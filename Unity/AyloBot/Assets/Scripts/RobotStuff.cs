@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.Collections.Generic;
 
 public class RobotStuff
@@ -8,13 +9,38 @@ public class RobotStuff
 	}
 
 	// This function is called every time a command is received from the robot.
+	// It is always called in the same thread as the Update function.
 	public void Command(RobotCommand command, IDictionary<string, string> variables, RobotMessageSender robot)
 	{
-		if(command.commandDescription == "barrel roll")
+		if(command.Is("barrel roll"))
 		{
 			//robot.SendMessage("/say Weeeeee!!!");
 
 			// Rotate stuff.
 		}
+
+		else if(command.Is("earthquake"))
+		{
+			//robot.SendMessage("/say EARTHQUAKE!!!");
+			
+			// Shake stuff.
+		}
+
+		else if(command.Is("/add quest #s"))
+			quests.Add(command.GetString(0));
+
+		else if(command.Is("/update quest #i #s"))
+			quests.Update(command.GetInteger(0), command.GetString(1));
+
+		else if(command.Is("/close quest #i"))
+			quests.Close(command.GetInteger(0));
+
+		else if(command.Is("/open quest #i"))
+			quests.Open(command.GetInteger(0));
+
+		else if(command.Is("/remove quest #i"))
+			quests.Remove(command.GetInteger(0));
 	}
+
+	Quests quests = new Quests();
 }
