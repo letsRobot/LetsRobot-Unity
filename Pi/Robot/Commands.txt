@@ -26,7 +26,7 @@
 #
 # Make sure the file ends with two blank lines.
 
-0
+10
 0
 /q
 /quit
@@ -38,6 +38,10 @@
 10
 0
 /hide #w
+
+10
+0
+/print #s
 
 10
 0
@@ -54,6 +58,22 @@
 0
 /me #s
 /action #s
+
+10
+0
+/add quest #s
+
+10
+0
+/update quest #i #s
+
+10
+0
+/close quest #i
+
+10
+0
+/remove quest #i
 
 0
 0
@@ -119,6 +139,9 @@ light all #i #i #i
 led all #i #i #i
 
 0
-0
+30
 barrel roll
 
+0
+30
+earthquake

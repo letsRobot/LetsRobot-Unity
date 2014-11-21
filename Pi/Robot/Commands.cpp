@@ -74,6 +74,11 @@ Command("/hide #w")
    ExecuteShowHide(CommandFunctionActualParameters, false);
 }
 
+Command("/print #s")
+{
+   std::cout << parameters.GetString(0) << std::endl;
+}
+
 Command("/say #s")
 {
    Say(CommandFunctionActualParameters, parameters.GetString(0));
