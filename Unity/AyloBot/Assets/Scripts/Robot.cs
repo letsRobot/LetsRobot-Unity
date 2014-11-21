@@ -7,14 +7,18 @@ public class Robot : MonoBehaviour
 	public string server;
 	public int port;
 	public int numberOfChatMessages;
+	public string chatUsernameColor;
 	public string normalChatMessageColor;
 	public string commandColor;
 	public string executingCommandColor;
+	public string openQuestColor;
+	public string closedQuestColor;
 
 	void Start()
 	{
 		server = Constants.IP1;
 		robotMessages = new RobotMessages(server, port);
+		robotStuff = new RobotStuff();
 	}
 
 	public void OnApplicationQuit()
@@ -68,19 +72,19 @@ public class Robot : MonoBehaviour
 		if(message.isExecuting)
 			color = executingCommandColor;
 
-		richText += "<color=" + color + ">";
-		richText += message.user;
+		var isAction = message.message.StartsWith(chatActionPrefix) && message.message.EndsWith(chatActionPostfix);
 
-		if(message.message.StartsWith(chatActionPrefix) && message.message.EndsWith(chatActionPostfix))
-		{
-			richText += " ";
+		richText += "<color=#" + chatUsernameColor + ">";
+		richText += message.user;
+		richText += isAction ? " " : ": ";
+		richText += "</color>";
+
+		richText += "<color=#" + color + ">";
+
+		if(isAction)
 			richText += message.message.Substring(chatActionPrefix.Length, message.message.Length - chatActionPrefix.Length - 1);
-		}
 		else
-		{
-			richText += ": ";
 			richText += message.message;
-		}
 
 		richText += "</color>";
 		richText += "\n";
@@ -137,7 +141,7 @@ public class Robot : MonoBehaviour
 	}
 
 	RobotMessages robotMessages;
-	RobotStuff robotStuff = new RobotStuff();
+	RobotStuff robotStuff;
 	IDictionary<string, string> variables;
 	string chatActionPrefix = "\x0001ACTION"; // This is what Twitch puts before and after a /me message.
 	string chatActionPostfix = "\x0001";

@@ -3,6 +3,13 @@ using System.Collections.Generic;
 
 public class Quests
 {
+	public Quests()
+	{
+		var robot = GameObject.Find("Robot").GetComponent<Robot>();
+		openColor = robot.openQuestColor;
+		closedColor = robot.closedQuestColor;
+	}
+
 	public void Add(string quest)
 	{
 		quests.Add(new Quest(quest));
@@ -11,7 +18,7 @@ public class Quests
 	
 	public void Update(int iQuest, string quest)
 	{
-		if(BadIndex(iQuest))
+		if(IsBadIndex(iQuest))
 			return;
 		
 		quests[iQuest].text = quest;
@@ -20,7 +27,7 @@ public class Quests
 	
 	public void Close(int iQuest)
 	{
-		if(BadIndex(iQuest))
+		if(IsBadIndex(iQuest))
 			return;
 		
 		quests[iQuest].closed = true;
@@ -29,7 +36,7 @@ public class Quests
 	
 	public void Open(int iQuest)
 	{
-		if(BadIndex(iQuest))
+		if(IsBadIndex(iQuest))
 			return;
 		
 		quests[iQuest].closed = false;
@@ -38,7 +45,7 @@ public class Quests
 	
 	public void Remove(int iQuest)
 	{
-		if(BadIndex(iQuest))
+		if(IsBadIndex(iQuest))
 			return;
 		
 		quests.RemoveAt(iQuest);
@@ -51,19 +58,22 @@ public class Quests
 		string questsString = "";
 		foreach(var quest in quests)
 		{
+			var color = openColor;
+
 			if(quest.closed)
-				questsString += "<color=#404040ff>";
+				color = closedColor;
 			
+			questsString += "<color=#" + color + ">";
+
 			questsString += quest.text + "\n";
 			
-			if(quest.closed)
-				questsString += "</color>";
+			questsString += "</color>";
 		}
 		
 		GameObject.Find("Quests").GetComponent<TextMesh>().text = questsString;
 	}
 	
-	bool BadIndex(int iQuest)
+	bool IsBadIndex(int iQuest)
 	{
 		return iQuest < 0 || iQuest > quests.Count;
 	}
@@ -79,6 +89,8 @@ public class Quests
 			closed = false;
 		}
 	}
-	
+
+	string openColor;
+	string closedColor;
 	IList<Quest> quests = new List<Quest>();
 }

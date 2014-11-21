@@ -56,4 +56,3 @@ public class RobotCommand
 	string commandDescription;
 	IList<string> actualParameters = new List<string>();
 }
-

@@ -6,6 +6,7 @@ public class RobotStuff
 	// This function is called before every frame is shown.
 	public void Update(IDictionary<string, string> variables, RobotMessageSender robot)
 	{
+		barrelRoller.Update();
 	}
 
 	// This function is called every time a command is received from the robot.
@@ -14,9 +15,13 @@ public class RobotStuff
 	{
 		if(command.Is("barrel roll"))
 		{
-			//robot.SendMessage("/say Weeeeee!!!");
+			if(!barrelRoller.IsRolling())
+			{
+				robot.SendMessage("/say Weeeeee!!!");
 
-			// Rotate stuff.
+				barrelRoller.SetSecondsPerRotation(4);
+				barrelRoller.DoBarrelRoll();
+			}
 		}
 
 		else if(command.Is("earthquake"))
@@ -42,5 +47,6 @@ public class RobotStuff
 			quests.Remove(command.GetInteger(0));
 	}
 
+	BarrelRoller barrelRoller = new BarrelRoller();
 	Quests quests = new Quests();
 }
