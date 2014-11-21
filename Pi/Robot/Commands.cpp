@@ -54,7 +54,11 @@
 // The messageObserver object can be used to add a chat message to the chat message queue as if it had come from the actual chat.
 // It has type MessageObserver.
 // Chat messages can be added using the function NewMessage.
-
+//
+//
+// The function Say can be used to send a chat message from the robot.
+// The message will be sent to the IRC server as well as the Unity program.
+// The following function call will send a chat message from the robot saying "Hi": Say(CommandFunctionActualParameters, "Hi");
 
 #include "Commands.h"
 #include "Lights.h"
@@ -72,9 +76,7 @@ Command("/hide #w")
 
 Command("/say #s")
 {
-   irc.SendMessage(parameters.GetString(0).c_str());
-
-   messageObserver.NewMessage(true, irc.GetUsername(), parameters.GetString(0));
+   Say(CommandFunctionActualParameters, parameters.GetString(0));
 }
 
 Command("/me #s")
@@ -130,8 +132,8 @@ Command("echo")
    std::stringstream str;
    str << "Distance to object: " << distance << "cm.";
 
-   irc.SendMessage(str.str().c_str());
-   messageObserver.NewMessage(true, irc.GetUsername(), str.str().c_str());
+   Say(CommandFunctionActualParameters, str.str());
+
    unity.SendVariableMessage("echo", std::to_string(distance));
 }
 
@@ -271,4 +273,10 @@ void SetLight(CommandFunctionParameters, int light, int r, int g, int b)
 
       unity.SendVariableMessage(variable, value);
    }
+}
+
+void Say(CommandFunctionParameters, const std::string & message)
+{
+   irc.SendMessage(message);
+   messageObserver.NewMessage(true, irc.GetUsername(), message);
 }

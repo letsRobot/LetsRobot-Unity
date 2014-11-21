@@ -19,6 +19,8 @@
 #include <cassert>
 #include <utility>
 
+extern MessageObserver * sigIntHandlerMessageObserver;
+
 class RobotProgram
    : private Stoppable
 {
@@ -50,6 +52,11 @@ class RobotProgram
          std::cout << "Done." << std::endl;
       }
 
+      ~RobotProgram()
+      {
+         sigIntHandlerMessageObserver = 0;
+      }
+
       int GetResult() const
       {
          return result;
@@ -78,6 +85,8 @@ class RobotProgram
             Robot robot(serialPort, baudRate, settings.GetBoolean("show_robot"), settings.GetBoolean("show_robot_debug"));
 
             messageDispatcher.reset(new MessageDispatcher(&commandDescriptions, &users, settings.GetBoolean("show_chat")));
+
+            sigIntHandlerMessageObserver = messageDispatcher.get();
 
             ircThread.reset(new IrcThread(settings.GetString("irc_server"),
                                           settings.GetInteger("irc_port"),

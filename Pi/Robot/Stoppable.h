@@ -4,7 +4,7 @@
 class Stoppable
 {
    public:
-      virtual ~Stoppable() noexcept { }
+      virtual ~Stoppable() { }
       virtual void Stop() = 0;
 };
 

@@ -8,5 +8,6 @@ void ExecuteShowHide(CommandFunctionParameters, bool showHide);
 void Light(CommandFunctionParameters, int light, const std::string & color);
 void Light(CommandFunctionParameters, int light, int r, int g, int b);
 void SetLight(CommandFunctionParameters, int light, int r, int g, int b);
+void Say(CommandFunctionParameters, const std::string & message);
 
 #endif
