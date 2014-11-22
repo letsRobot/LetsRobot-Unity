@@ -7,7 +7,6 @@ public class BarrelRoller
 		if(!isRolling)
 			return;
 
-		var camera = GameObject.Find("Main Camera").GetComponent<Camera>();
 		var degrees = GetDeltaTime() * 360.0f / secondsPerRotation;
 
 		if(degrees >= 360)
@@ -16,6 +15,7 @@ public class BarrelRoller
 			degrees = 0;
 		}
 
+		var camera = GameObject.Find("Main Camera").GetComponent<Camera>();
 		camera.transform.rotation = Quaternion.Euler(0, 0, degrees);
 	}
 
@@ -24,7 +24,7 @@ public class BarrelRoller
 		this.secondsPerRotation = secondsPerRotation;
 	}
 
-	public void DoBarrelRoll()
+	public void StartBarrelRoll()
 	{
 		beginTime = Time.time;
 		isRolling = true;

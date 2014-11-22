@@ -7,6 +7,7 @@ public class RobotStuff
 	public void Update(IDictionary<string, string> variables, RobotMessageSender robot)
 	{
 		barrelRoller.Update();
+		earthquaker.Update();
 	}
 
 	// This function is called every time a command is received from the robot.
@@ -20,15 +21,20 @@ public class RobotStuff
 				robot.SendMessage("/say Weeeeee!!!");
 
 				barrelRoller.SetSecondsPerRotation(4);
-				barrelRoller.DoBarrelRoll();
+				barrelRoller.StartBarrelRoll();
 			}
 		}
 
 		else if(command.Is("earthquake"))
 		{
-			//robot.SendMessage("/say EARTHQUAKE!!!");
-			
-			// Shake stuff.
+			if(!barrelRoller.IsRolling())
+			{
+				robot.SendMessage("/say EARTHQUAKE!!!");
+
+				earthquaker.SetDurationInSeconds(5);
+				earthquaker.SetMagnitude(2);
+				earthquaker.StartEarthquake();
+			}
 		}
 
 		else if(command.Is("/add quest #s"))
@@ -48,5 +54,6 @@ public class RobotStuff
 	}
 
 	BarrelRoller barrelRoller = new BarrelRoller();
+	EarthQuaker earthquaker = new EarthQuaker();
 	Quests quests = new Quests();
 }
