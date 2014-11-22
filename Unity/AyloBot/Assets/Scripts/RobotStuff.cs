@@ -27,7 +27,7 @@ public class RobotStuff
 
 		else if(command.Is("earthquake"))
 		{
-			if(!barrelRoller.IsRolling())
+			if(!earthquaker.IsQuaking())
 			{
 				robot.SendMessage("/say EARTHQUAKE!!!");
 

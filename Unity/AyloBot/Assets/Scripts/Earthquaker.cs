@@ -8,12 +8,15 @@ public class EarthQuaker
 			return;
 
 		Vector3 position = originalPosition;
+
 		if(GetDeltaTime() < durationInSeconds)
 		{
 			var randomOffset = Random.insideUnitSphere * magnitude;
 			randomOffset.z = 0;
 			position += randomOffset;
 		}
+		else
+			isQuaking = false;
 
 		GameObject.Find("Streamer").transform.position = position;
 	}
