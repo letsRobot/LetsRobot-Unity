@@ -22,9 +22,6 @@
 # ...
 # Alternative command description n
 # <blank line>
-#
-#
-# Make sure the file ends with two blank lines.
 
 10
 0
@@ -150,3 +147,4 @@ barrel roll
 30
 earthquake
 
+# This comment should be placed after all command descriptions.
