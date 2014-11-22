@@ -15,8 +15,7 @@ public class EarthQuaker
 			position += randomOffset;
 		}
 
-		var camera = GameObject.Find("Main Camera").GetComponent<Camera>();
-		camera.transform.position = position;
+		GameObject.Find("Streamer").transform.position = position;
 	}
 	
 	public void SetDurationInSeconds(float durationInSeconds)
@@ -31,8 +30,7 @@ public class EarthQuaker
 
 	public void StartEarthquake()
 	{
-		camera = GameObject.Find("Main Camera").GetComponent<Camera>();
-		originalPosition = camera.transform.position;
+		originalPosition = GameObject.Find("Streamer").transform.position;
 
 		beginTime = Time.time;
 		isQuaking = true;
