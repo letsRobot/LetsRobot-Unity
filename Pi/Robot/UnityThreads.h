@@ -81,12 +81,17 @@ class UnityThreads
 
       void AddMessage(const std::string & message)
       {
+         assert(&message);
+
          if(clientSocket)
             messages.Push(message);
       }
 
       void SendChatMessage(const std::string & chatMessage, const std::string & user)
       {
+         assert(&chatMessage);
+         assert(&user);
+
          std::string message;
          message += "chat";
          message += " ";
@@ -99,6 +104,10 @@ class UnityThreads
 
       void SendCommandMessage(const std::string & user, const std::string & commandDescription, const std::string & actualCommand, uint32_t commandId, bool isFromChat)
       {
+         assert(&user);
+         assert(&commandDescription);
+         assert(&actualCommand);
+
          std::string message;
          message += "command";
          message += " ";
@@ -136,8 +145,11 @@ class UnityThreads
          AddMessage(message);
       }
 
-      void SendVariableMessage(const std::string & variable, const std::string value)
+      void SendVariableMessage(const std::string & variable, const std::string & value)
       {
+         assert(&variable);
+         assert(&value);
+
          std::string message;
          message += "variable";
          message += " ";
@@ -162,6 +174,13 @@ class UnityThreads
       template <typename ThreadFunction>
       void InputOutputThread(ThreadFunction threadFunction, std::mutex & lock, std::mutex & otherLock, std::exception_ptr & exceptionPointer, bool & hasConnected, bool & otherHasConnected)
       {
+         assert(threadFunction);
+         assert(&lock);
+         assert(&otherLock);
+         assert(&exceptionPointer);
+         assert(&hasConnected);
+         assert(&otherHasConnected);
+
          try
          {
             ResetConnection(otherLock, hasConnected, otherHasConnected);
@@ -202,6 +221,10 @@ class UnityThreads
 
       void ResetConnection(std::mutex & otherLock, bool & hasConnected, bool & otherHasConnected)
       {
+         assert(&otherLock);
+         assert(&hasConnected);
+         assert(&otherHasConnected);
+
          std::lock_guard<std::mutex> l1(connectingLock); // Make sure only one of the threads waits for a connection at a time.
 
          if(otherHasConnected) // Return if the other thread has already connected.
@@ -244,6 +267,8 @@ class UnityThreads
 
       void SetExceptionPointer(std::exception_ptr & exceptionPointer)
       {
+         assert(&exceptionPointer);
+
          try
          {
             exceptionPointer = std::current_exception();

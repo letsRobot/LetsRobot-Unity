@@ -110,6 +110,9 @@ class GenericRobot
 
       bool EndsWith(const std::string & str1, const std::string & str2) const
       {
+         assert(&str1);
+         assert(&str2);
+
          return str1.find_last_of(str2) == str1.length() - 1;
       }
 
@@ -176,6 +179,8 @@ class GenericRobot
       private:
          void AddToReads(const std::string & line)
          {
+            assert(&line);
+
             reads.push(line + "\r\n\r");
          }
 

@@ -66,6 +66,10 @@ class CommandExecuterThread
       void AddCommand(const ActualCommand & actualCommand, const std::string & user, bool isFromChat)
       {
          assert(&actualCommand);
+         assert(&user);
+
+         if(CommandNeedsToCoolDown(actualCommand.GetCommandDescription()))
+            return;
 
          commands.Push(CommandReadyForExecution(actualCommand, user, commandId));
 
@@ -103,9 +107,6 @@ class CommandExecuterThread
          assert(&command);
 
          const auto commandDescription = command.actualCommand.GetCommandDescription()->GetString();
-
-         if(CommandNeedsToCoolDown(command.actualCommand.GetCommandDescription()))
-            return;
 
          if(showCommands)
             std::cout << "Executing command: " << commandDescription << std::endl;
@@ -145,6 +146,8 @@ class CommandExecuterThread
 
       bool CommandNeedsToCoolDown(const CommandDescription * commandDescription)
       {
+         assert(commandDescription);
+
          const auto commandCooldown = commandDescription->GetCooldownTime();
          const auto commandHasCooldown = commandCooldown != 0;
 

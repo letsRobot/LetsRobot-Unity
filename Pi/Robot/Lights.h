@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <iomanip>
+#include <cassert>
 
 class Lights
 {
@@ -19,6 +20,8 @@ class Lights
       Lights(const char * devName, int address)
          : file(-1)
       {
+         assert(devName);
+
          if((file = open(devName, O_RDWR)) < 0)
          {
             std::cout << "I2C: Failed to access " << devName << "." << std::endl;

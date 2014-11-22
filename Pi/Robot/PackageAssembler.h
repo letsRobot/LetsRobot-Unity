@@ -71,6 +71,8 @@ class PackageAssembler
    private:
       void SetPackage(uint8_t * package)
       {
+         assert(package);
+
          this->package = package;
          iByte = 0;
       }

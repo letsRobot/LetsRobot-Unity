@@ -6,12 +6,15 @@
 #include <string>
 #include <map>
 #include <cstdint>
+#include <cassert>
 
 class Users
 {
    public:
       Users(const char * filename)
       {
+         assert(filename);
+
          std::ifstream file(filename);
          if(!file.is_open())
          {
@@ -55,6 +58,8 @@ class Users
 
       int32_t GetPrivilegeLevel(const std::string & user) const
       {
+         assert(&user);
+
          const auto iUser = users.find(user);
 
          if(iUser == users.end())

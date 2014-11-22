@@ -103,7 +103,7 @@ class IrcThread
             try
             {
                ResetConnection();
-//               SendActionMessage("is online and stuff.");
+               //messageObserver->NewMessage(false, "", "/irc_connected");
                ReceiveMessages();
             }
             catch(Exception &e)

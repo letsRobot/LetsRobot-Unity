@@ -243,6 +243,8 @@ class ActualCommand
       // Returns a string corresponding to the original string but in lowercase and with exactly one space between words.
       const std::string MakeCleanCommand(const std::string & command) const
       {
+         assert(&command);
+
          Tokenizer tokenizer(command.c_str(), command.length());
          tokenizer.SetDelimiters(" ");
 
@@ -274,6 +276,7 @@ class ActualCommand
       {
          assert(commandDescription);
          assert(type != CommandPartType::Keyword);
+         assert(&iPart);
 
          const auto & parts = commandDescription->GetCommandDescriptions()[iSingleCommandDescription];
 
@@ -499,6 +502,8 @@ class CommandDescriptions
 
       bool ContainsStringParameter(const std::vector<CommandDescriptionPart> & singleCommandDescription) const
       {
+         assert(&singleCommandDescription);
+
          for(const auto & parameter : singleCommandDescription)
             if(parameter.type == CommandPartType::String)
                return true;
@@ -508,6 +513,7 @@ class CommandDescriptions
 
       bool PartsAreCompatible(const ActualCommandPart & actualPart, const CommandDescriptionPart & descriptionPart) const
       {
+         assert(&actualPart);
          assert(&descriptionPart);
 
          return PartsAreKeywords(actualPart, descriptionPart) ||
@@ -517,6 +523,7 @@ class CommandDescriptions
 
       bool PartsAreKeywords(const ActualCommandPart & actualPart, const CommandDescriptionPart & descriptionPart) const
       {
+         assert(&actualPart);
          assert(&descriptionPart);
 
          return descriptionPart.type == CommandPartType::Keyword &&
@@ -526,6 +533,7 @@ class CommandDescriptions
 
       bool PartsAreWords(const ActualCommandPart & actualPart, const CommandDescriptionPart & descriptionPart) const
       {
+         assert(&actualPart);
          assert(&descriptionPart);
 
          return actualPart.type      == CommandPartType::Word &&
@@ -534,6 +542,7 @@ class CommandDescriptions
 
       bool PartsAreIntegers(const ActualCommandPart & actualPart, const CommandDescriptionPart & descriptionPart) const
       {
+         assert(&actualPart);
          assert(&descriptionPart);
 
          return actualPart.type      == CommandPartType::Integer &&
