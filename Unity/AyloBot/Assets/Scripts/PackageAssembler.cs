@@ -1,5 +1,6 @@
 using System.IO;
 
+// The package format used in this class is described in UnityThreads.cpp.
 public class PackageAssembler
 {
 	public const int packageSize = 64;

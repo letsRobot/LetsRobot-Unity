@@ -15,6 +15,7 @@ public interface RobotMessageSender
 	void SendMessage(string message);
 }
 
+// The package format used in this class is described in UnityThreads.cpp.
 public class RobotConnection : RobotMessageSender
 {
 	public RobotConnection(string server, int port, RobotMessageReceiver robotMessageReceiver)
@@ -56,13 +57,11 @@ public class RobotConnection : RobotMessageSender
 
 	void InputThread()
 	{
-		Thread.CurrentThread.Name = "Input";////
 		InputOutput(InputFunction, ref inputLock, ref outputLock, ref inputHasConnected, ref outputHasConnected);
 	}
 
 	void OutputThread()
 	{
-		Thread.CurrentThread.Name = "Output";////
 		InputOutput(OutputFunction, ref outputLock, ref inputLock, ref outputHasConnected, ref inputHasConnected);
 	}
 
@@ -182,7 +181,7 @@ public class RobotConnection : RobotMessageSender
 		}
 
 		var secondsSinceLastHello = DateTime.Now.Subtract(lastHelloTime).TotalSeconds;
-		if(secondsSinceLastHello > 1)
+		if(secondsSinceLastHello > 5)
 		{
 			SendMessage("hello");
 			lastHelloTime = DateTime.Now;

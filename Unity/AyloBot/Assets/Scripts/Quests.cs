@@ -52,7 +52,7 @@ public class Quests
 		UpdateQuests();
 	}
 	
-	// This function is the one that should be changed to change the appearance of the quests.
+	// Change this function to change the appearance of the quests.
 	void UpdateQuests()
 	{
 		string questsString = "";

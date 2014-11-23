@@ -1,6 +1,24 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+// The Update and Command functions uses the following parameters:
+//
+// command
+// The command.Is() function can be used to determine what the command is.
+// The functions command.GetInteger(), command.GetWord(), and command.GetString() can be used to get the actual parameters of the command.
+// They work the same way as the functions of 'parameters' in Commands.cpp do.
+//
+// robot
+// The robot.SendMessage() function can be used to send a message to the Pi program.
+// The Pi program will receive this message as if it had typed directly into it.
+//
+// variable
+// The variables parameter contains a number of names each associated with a value.
+// These name/value pairs can be set from the Pi as described in Commands.cpp.
+// Both the names and the values are of type string.
+// To get the value associated with a certain name use variables[name]. E.g. string echoDistance = variables["echo"];
+// Trying to get a value using a name that does not have an associated value yet will throw a KeyNotFoundException.
+
 public class RobotStuff
 {
 	// This function is called before every frame is shown.
@@ -8,6 +26,10 @@ public class RobotStuff
 	{
 		barrelRoller.Update();
 		earthquaker.Update();
+
+		// A simple example of how to have the Pi program display information from the Unity program.
+		if(Input.GetKeyDown(KeyCode.A))
+			robot.SendMessage("/print The A key was pressed in Unity.");
 	}
 
 	// This function is called every time a command is received from the robot.
