@@ -8,8 +8,17 @@ class Unity
    public:
       virtual ~Unity() { }
 
-      virtual void SendChatMessage(const std::string & /*chatMessage*/, const std::string & /*user*/) { }
-      virtual void SendVariableMessage(const std::string & /*variable*/, const std::string /*value*/) { }
+      virtual void SendChatMessage(const std::string & chatMessage, const std::string & user) = 0;
+      virtual void SendVariableMessage(const std::string & variable, const std::string & value) = 0;
+};
+
+class UnityDummy : public Unity
+{
+   void SendChatMessage(const std::string &, const std::string &)
+   { }
+
+   void SendVariableMessage(const std::string &, const std::string &)
+   { }
 };
 
 #endif

@@ -179,7 +179,7 @@ class CommandExecuterThread
       std::map<std::string, time_t> timesOfLastCommands;
       ThreadSafeQueue<CommandReadyForExecution> commands;
       UnityThreads * unity;
-      Unity unityDummy;
+      UnityDummy unityDummy;
       Unity * commandCallUnity;
       uint32_t commandId;
 };
