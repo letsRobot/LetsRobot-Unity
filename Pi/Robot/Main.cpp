@@ -18,6 +18,6 @@ int main()
    signal(SIGPIPE, SIG_IGN); // Ignore the signal when a socket is disconnected.
    signal(SIGINT, SigIntHandler);
 
-   RobotProgram program;
+   RobotProgram program; // The entire program is run here in the RobotProgram constructor (see RobotProgram.h)
    return program.GetResult();
 }

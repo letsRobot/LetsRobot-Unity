@@ -15,20 +15,28 @@ class RobotSettings
    public:
       RobotSettings(const char * filename)
       {
+         // Error if filename is not ""
          assert(filename);
 
+         // Open the file
          std::ifstream file(filename);
          if(!file.is_open())
             Fail(filename);
-
+         
+         // Parse the file one line at a time
          while(!file.eof())
          {
+            // Get the next line of the file
             std::string line;
             getline(file, line);
 
+            // If the line is empty or starts with a # (is a comment),
+            // then don't do anything -- go to next line
             if(line.empty() || line[0] == '#')
                continue;
 
+            // Break up the string into three parts
+            // Assumes string is in the form setting = value
             std::stringstream lineStream(line);
             std::string setting;
             std::string equalsSign;
@@ -38,12 +46,15 @@ class RobotSettings
             lineStream >> equalsSign;
             lineStream >> value;
 
+            // If there is no setting, don't do anything (go to next line)
             if(setting.empty())
                continue;
 
+            // Something is wrong, so quit with an error
             if((!file.good() && !file.eof()) || equalsSign != "=" || value.empty())
                Fail(filename);
 
+            // Everything is good! Set the setting to the value
             settings[setting] = value;
          }
       }

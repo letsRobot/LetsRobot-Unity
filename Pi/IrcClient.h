@@ -20,13 +20,16 @@ class IrcClientObserver
 class IrcClient
 {
    public:
-      IrcClient(const char * server, uint16_t port, const char * nickname, const char * password, IrcClientObserver * observer) : observer(observer),
-                                                                                                                                  connection(server, port),
-                                                                                                                                  bufferSize(256 * 1024),
-                                                                                                                                  buffer(new char[bufferSize]),
-                                                                                                                                  iBuffer(0),
-                                                                                                                                  bufferEnd(0)
+      // This is the function called when IRCMessageReceiver is initialized
+      IrcClient(const char * server, uint16_t port, const char * nickname, const char * password, IrcClientObserver * observer) : 
+         observer(observer),
+         connection(server, port), // This is actually a function call that establishes a TCP connection to the server
+         bufferSize(256 * 1024),
+         buffer(new char[bufferSize]), // Create a 256 KB buffer
+         iBuffer(0),
+         bufferEnd(0)
       {
+         // Make sure all of the parameters are non-zero
          assert(server);
          assert(nickname);
          assert(password);
@@ -34,7 +37,7 @@ class IrcClient
          assert(*nickname);
          assert(*password);
          assert(observer);
-
+         // Log in to IRC server through the TCP connection
          Login(nickname, password);
       }
 
@@ -46,13 +49,20 @@ class IrcClient
 
       void ReceiveMessages()
       {
+         // Keep receiving messages ... forever?
+         // Infinite loop
          while(true)
          {
             Message message;
-
+            // If there is no message to read, try again
+            // This is a form of "busy waiting" or "spin locking"
+            // It's possible that this is using a lot more battery than it needs to
+            // TODO: consider adding some kind of sleep timer here to only check for
+            // messages every X milliseconds
             if(!ReadMessage(message))
                continue;
 
+            // Respond to various kinds of message
             if(message.command == "PING")
             {
                const auto response = std::string() + "PONG " + message.parameters + "\r\n";
@@ -61,21 +71,25 @@ class IrcClient
 
             else if(message.command == "PRIVMSG")
             {
+               // Separate the message into two parts around the first space character ' '
                size_t usernameEnd = 0;
                const auto from = GetToken(message.parameters, usernameEnd, " ");
                const size_t messageBegin = usernameEnd + 1;
-
+               // Something went wrong, e.g. message had no space in it
+               // Quit
                if(messageBegin >= message.parameters.length())
                   return;
-
+               // Send bisected message to IRC observer
                observer->IrcMessage(message.nickname, from, &message.parameters[messageBegin]);
             }
 
             else if(message.command == "NOTICE")
             {
+               // Split message into two parts around : character
                size_t noticeStart = 0;
                GetToken(message.parameters, noticeStart, ":");
                const auto notice = &message.parameters[noticeStart];
+               // Send the second part of message to observer (the part after the colon)
                observer->IrcNotice(notice);
             }
 
@@ -84,8 +98,12 @@ class IrcClient
                     std::isdigit(message.command[1]) &&
                     std::isdigit(message.command[2]))
             {
+               // The message is 3 numeric characters, like "123" or "517"
+               // Send this value as an integer to observer
                observer->IrcNumeric(atoi(message.command.c_str()));
             }
+
+            // Any other kinds of messages could be added here
          }
       }
 
@@ -106,7 +124,9 @@ class IrcClient
 
       void Login(const char * nickname, const char * password)
       {
+         // Create a login string that the IRC server can parse
          const auto strLogin = std::string() + "PASS " + password + "\r\n" + "NICK " + nickname + "\r\n";
+         // Send the login string over the TCP connection
          connection.Send(strLogin);
       }
 
