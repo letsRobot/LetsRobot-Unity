@@ -213,6 +213,7 @@ void Light(CommandFunctionParameters, int light, const std::string & color)
       uint8_t r, g, b;
    };
 
+   //This is the only place you need to add new colors
    const std::map<std::string, Rgb> colors =
    {
       {"black",   {0,   0,   0  }},
@@ -223,7 +224,8 @@ void Light(CommandFunctionParameters, int light, const std::string & color)
       {"purple",  {255, 0,   255}},
       {"magenta", {255, 0,   255}},
       {"cyan",    {0,   255, 255}},
-      {"white",   {255, 255, 255}}
+      {"white",   {255, 255, 255}},
+      {"orange", {255,125,  0}}
    };
 
    const auto iColor = colors.find(color);
