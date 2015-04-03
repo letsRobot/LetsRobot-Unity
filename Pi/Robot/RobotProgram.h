@@ -25,13 +25,15 @@ class RobotProgram
    : private Stoppable
 {
    public:
+      // This is where we go from main()
       RobotProgram()
          : result(0)
       {
          try
          {
-            Run();
+            Run(); // Call member function that actually does things
          }
+         // React to different kinds of errors that Run() might throw
          catch(std::bad_alloc &)
          {
             Fail("Out of memory.");
@@ -75,10 +77,11 @@ class RobotProgram
          {
             std::unique_lock<std::mutex> l(stopLock);
 
-            RobotSettings settings("Settings.txt");
-            CommandDescriptions commandDescriptions("Commands.txt");
-            Users users("Users.txt");
+            RobotSettings settings("Settings.txt"); // Parse the settings file and store the values
+            CommandDescriptions commandDescriptions("Commands.txt"); // Parse the command descriptions file
+            Users users("Users.txt"); // Parse the users file and store the privilege levels
 
+            // Connect to robot
             const auto serialPort = settings.GetString("serial_port");
             const auto baudRate = settings.GetInteger("baud_rate");
             std::cout << "Connecting to robot using " << serialPort << " at " << baudRate << " baud." << std::endl;
@@ -88,6 +91,8 @@ class RobotProgram
 
             sigIntHandlerMessageObserver = messageDispatcher.get();
 
+            // Create and run all the different threads; look at their respective files to see what
+            // they are actually doing. Each one is essentially a mini-program with its own loop.
             ircThread.reset(new IrcThread(settings.GetString("irc_server"),
                                           settings.GetInteger("irc_port"),
                                           settings.GetString("irc_channel"),
@@ -111,6 +116,7 @@ class RobotProgram
 
             messageDispatcher->DispatchMessages();
 
+            // Wait for all of the threads to complete, and then quit
             StopAndJoinThreads();
 
             // If any of the threads exited because of an exception rethrow it here.

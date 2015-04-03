@@ -9,15 +9,21 @@
 class IrcMessageReceiver : private IrcClientObserver
 {
    public:
-      IrcMessageReceiver(const char * password) : robotSerialPort(-1),
-                                                  client("irc.twitch.tv", 6667, "aylobot", password, this),
-                                                  channel("#aylojill"),
-                                                  timeLastRobotMessage(0)
+      // Constructor for the IrcMessageReceiver
+      // This is where we enter the program from main()
+      IrcMessageReceiver(const char * password) : 
+         // Initialize some of the members of this class
+         robotSerialPort(-1),
+         timeLastRobotMessage(0),
+         client("irc.twitch.tv", 6667, "aylobot", password, this), // This is actually a function that logs into the IRC server
+                                                                   // See IrcClient.h
+         channel("#aylojill")
       {
          ConnectToRobot("/dev/ttyUSB0");
 
          client.JoinChannel(channel);
          RobotMessage("Systems online. Preparing weapons for human slaughter. I mean... hi, how are ya?");
+         // Enter a loop in which we just keep waiting for and handling messages
          client.ReceiveMessages();
       }
 
@@ -182,30 +188,42 @@ class IrcMessageReceiver : private IrcClientObserver
       time_t timeLastRobotMessage;
 };
 
+// This program connects to the IRC server and reacts to messages there
 int main(int argc, char ** argv)
 {
+   // Check if program is being run with fewer than two arguments
    if(argc < 2)
    {
+      // Print out usage instructions and quit
       std::cout << "Usage: <program name> <password>" << std::endl;
       return 1;
    }
 
+   // Try to set up IRC receiver using the password passed in to the 
+   // application. Handle any exceptions that occur by printing out
+   // an error message and quitting
    try
    {
       IrcMessageReceiver receiver(argv[1]);
    }
+   // These are the different kinds of errors we might receive
    catch(const char * errorMessage)
    {
+      // The exception threw an error message, so print it out
       std::cout << errorMessage << std::endl;
       return 1;
    }
    catch(std::bad_alloc &)
    {
+      // A memory allocation failed, this usually means there is not enough
+      // memory available, or at least not enough in a continuous block
       std::cout << "Out of memory." << std::endl;
       return 1;
    }
    catch(...)
    {
+      // The exception was not one of the above types, so just print out 
+      // "Unknown error" and quit
       std::cout << "Unknown error." << std::endl;
       return 1;
    }
