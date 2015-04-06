@@ -8,14 +8,21 @@ public class Robot : MonoBehaviour
 	public int port;
 	public int numberOfChatMessages;
 	public string chatUsernameColor;
+	public string[] chatUserNameColors;
 	public string normalChatMessageColor;
 	public string commandColor;
 	public string executingCommandColor;
 	public string openQuestColor;
 	public string closedQuestColor;
 
+	//dictionary for tracking users and assigning them colors in chat
+	Dictionary<string, string> users = new Dictionary<string, string>();
+
+
+
 	void Start()
 	{
+		//newUser = false;
 		server = Constants.IP1;
 		robotMessages = new RobotMessages(server, port);
 		robotStuff = new RobotStuff();
@@ -43,7 +50,7 @@ public class Robot : MonoBehaviour
 			robotStuff.Command(command, variables, robotMessages);
 	}
 
-	void UpdateChat()
+	void UpdateChat() //This updates the chat every frame (not ideal)
 	{
 		robotMessages.SetMaximumNumberOfMessages(numberOfChatMessages);
 		var chatMessages = robotMessages.GetChatMessages();
@@ -74,6 +81,9 @@ public class Robot : MonoBehaviour
 
 		var isAction = message.message.StartsWith(chatActionPrefix) && message.message.EndsWith(chatActionPostfix);
 
+		//int randomColor = UnityEngine.Random.Range(0, chatUserNameColors.Length);
+		chatUsernameColor = trackUsers(message.user);
+		Debug.Log("User Color: " + chatUsernameColor);
 		richText += "<color=#" + chatUsernameColor + ">";
 		richText += message.user;
 		richText += isAction ? " " : ": ";
@@ -90,6 +100,26 @@ public class Robot : MonoBehaviour
 		richText += "\n";
 
 		return richText;
+	}
+
+	//checks each user against the current dictionary,
+	//If the user isn't in the Dictionary, then add them and assign a color to them
+	string trackUsers(string checkUser) {
+		
+		if (!users.ContainsKey(checkUser)) {
+			
+			int randomColor = UnityEngine.Random.Range(0, chatUserNameColors.Length);
+			chatUsernameColor = chatUserNameColors[randomColor];
+			users.Add(checkUser, chatUsernameColor);
+			Debug.Log("Adding new user: " + checkUser);
+			
+		}
+		
+		string thisUserColor = "";
+		users.TryGetValue(checkUser, out thisUserColor);
+		Debug.Log("Returning Color: " + thisUserColor);
+		return thisUserColor;
+		
 	}
 
 	void UpdateHud()
