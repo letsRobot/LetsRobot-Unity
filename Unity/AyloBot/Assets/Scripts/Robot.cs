@@ -81,9 +81,8 @@ public class Robot : MonoBehaviour
 
 		var isAction = message.message.StartsWith(chatActionPrefix) && message.message.EndsWith(chatActionPostfix);
 
-		//int randomColor = UnityEngine.Random.Range(0, chatUserNameColors.Length);
 		chatUsernameColor = trackUsers(message.user);
-		Debug.Log("User Color: " + chatUsernameColor);
+		//Debug.Log("User Color: " + chatUsernameColor);
 		richText += "<color=#" + chatUsernameColor + ">";
 		richText += message.user;
 		richText += isAction ? " " : ": ";
@@ -111,13 +110,13 @@ public class Robot : MonoBehaviour
 			int randomColor = UnityEngine.Random.Range(0, chatUserNameColors.Length);
 			chatUsernameColor = chatUserNameColors[randomColor];
 			users.Add(checkUser, chatUsernameColor);
-			Debug.Log("Adding new user: " + checkUser);
+			//Debug.Log("Adding new user: " + checkUser);
 			
 		}
 		
 		string thisUserColor = "";
 		users.TryGetValue(checkUser, out thisUserColor);
-		Debug.Log("Returning Color: " + thisUserColor);
+		//Debug.Log("Returning Color: " + thisUserColor);
 		return thisUserColor;
 		
 	}
