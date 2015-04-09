@@ -28,7 +28,7 @@ public class jukeBox : MonoBehaviour {
 			}
 
 		UMusicInput(); //Unity shortcuts for Music
-		newTrack();
+		//newTrack();
 	}
 
 	int newTrack() {
@@ -45,8 +45,8 @@ public class jukeBox : MonoBehaviour {
 			if (playTrack > trackIndex) {
 				playTrack = 0;
 			}
-			thisJukeBox.clip = Songs[playTrack];
-			thisJukeBox.Play ();
+			//thisJukeBox.clip = Songs[playTrack];
+			//thisJukeBox.Play ();
 			nextTrack = false;
 		}
 		return playTrack;
@@ -85,7 +85,7 @@ public class jukeBox : MonoBehaviour {
 	}
 	
 	void Start () {
-		//playMusic();
+
 	}
 	
 	// Update is called once per frame
