@@ -10,6 +10,7 @@ public class jukeBox : MonoBehaviour {
 
 	bool Mute; //pauses current music
 	bool nextTrack; //true if next track
+	bool skipTrack; //True if skipping to next track
 	int playTrack = -1; //index of next track to play
 
 	float songLength; //Length of the current song
@@ -25,28 +26,29 @@ public class jukeBox : MonoBehaviour {
 			Debug.Log("Song is Playing");
 			songLength = currentSong.length;
 			Debug.Log ("Track Length: " + songLength);
-			}
+
+			//skip to the next song if "skipped"
+		} else if (skipTrack == true && thisJukeBox.isPlaying) {
+			thisJukeBox.Stop();
+			Debug.Log("Skipping to next track");
+			skipTrack = false;
+		}
 
 		UMusicInput(); //Unity shortcuts for Music
-		//newTrack();
 	}
 
 	int newTrack() {
 
 		int trackIndex = tracks - 1;
-
 		if (!thisJukeBox.isPlaying) {
 			nextTrack = true;
 		}
 
 		if (nextTrack == true) {
-
 			playTrack += 1;
 			if (playTrack > trackIndex) {
 				playTrack = 0;
 			}
-			//thisJukeBox.clip = Songs[playTrack];
-			//thisJukeBox.Play ();
 			nextTrack = false;
 		}
 		return playTrack;
@@ -54,7 +56,8 @@ public class jukeBox : MonoBehaviour {
 
 	//Unity shortcuts for Music
 	void UMusicInput () {
-
+		 
+		//Press M to Mute the current track
 		if (Input.GetKeyDown(KeyCode.M) && Mute == false) {
 			Mute = true;
 		} 
@@ -69,6 +72,11 @@ public class jukeBox : MonoBehaviour {
 		if (Mute == false && thisJukeBox.mute == true) {
 			thisJukeBox.mute = false;
 		}
+
+		//Press Right Arrow to skip to the next track.
+		if (Input.GetKeyDown (KeyCode.RightArrow) && thisJukeBox.isPlaying && skipTrack == false) {
+			skipTrack = true;
+		}
 	}
 
 
@@ -82,6 +90,7 @@ public class jukeBox : MonoBehaviour {
 		tracks = Songs.Length;
 		Debug.Log("Number of Songs: " + tracks);
 		nextTrack = false;
+		skipTrack = false;
 	}
 	
 	void Start () {
