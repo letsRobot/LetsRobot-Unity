@@ -147,4 +147,40 @@ barrel roll
 30
 earthquake
 
+10
+0
+/music on
+
+10
+0
+/music off
+
+10
+0
+/music mute
+
+10
+0
+/music unmute
+
+10
+0
+/music next
+
+10
+0
+/music back
+
+10
+0
+/music restart
+
+10
+0
+/music loop
+
+10
+0
+/music unloop
+
 # This comment should be placed after all command descriptions.

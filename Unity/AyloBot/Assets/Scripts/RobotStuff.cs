@@ -36,6 +36,7 @@ public class RobotStuff
 	// It is always called in the same thread as the Update function.
 	public void Command(RobotCommand command, IDictionary<string, string> variables, RobotMessageSender robot)
 	{
+		//BARREL ROLL
 		if(command.Is("barrel roll"))
 		{
 			if(!barrelRoller.IsRolling())
@@ -47,6 +48,7 @@ public class RobotStuff
 			}
 		}
 
+		//EARTHQUAKE
 		else if(command.Is("earthquake"))
 		{
 			if(!earthquaker.IsQuaking())
@@ -59,6 +61,8 @@ public class RobotStuff
 			}
 		}
 
+
+		//QUEST CONTROLS-----------------------------
 		else if(command.Is("/add quest #s"))
 			quests.Add(command.GetString(0));
 
@@ -73,6 +77,46 @@ public class RobotStuff
 
 		else if(command.Is("/remove quest #i"))
 			quests.Remove(command.GetInteger(0));
+
+
+		//MUSIC CONTROLS-----------------------------
+		else if(command.Is ("/music on")) {
+			jukeBox.getCommand = true;
+			jukeBox.RobotEnableMusic = true;
+			//robot.SendMessage("/say Music Toggled");
+		} else if(command.Is("/music off")) {
+			jukeBox.getCommand = true;
+			jukeBox.RobotEnableMusic = false;
+		} else if (command.Is ("/music mute")) {
+			jukeBox.getCommand = true;
+			jukeBox.RobotMute = true;
+			//mute music
+		} else if (command.Is("/music unmute")) {
+			jukeBox.getCommand = true;
+			jukeBox.RobotMute = false;
+			//unmute music
+		} else if (command.Is("/music next")) {
+			jukeBox.getCommand = true;
+			jukeBox.RobotSkipTrack = true;
+			//skip to next track
+		} else if (command.Is ("/music back")) {
+			jukeBox.getCommand = true;
+			jukeBox.RobotBackTrack = true;
+			//skip to previous track
+		} else if(command.Is("/music restart")) {
+			jukeBox.getCommand = true;
+			jukeBox.RobotRestartTrack = true;
+			//restart the current track
+		} else if (command.Is ("/music loop")) {
+			jukeBox.getCommand = true;
+			jukeBox.RobotLoopTrack = true;
+			//loops the current song
+		} else if (command.Is ("/music unloop")) {
+			jukeBox.getCommand = true;
+			jukeBox.RobotLoopTrack = false;
+			//unloops the current track
+		}
+
 	}
 
 	BarrelRoller barrelRoller = new BarrelRoller();

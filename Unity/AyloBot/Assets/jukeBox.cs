@@ -2,21 +2,66 @@
 using System.Collections;
 
 public class jukeBox : MonoBehaviour {
+	
+	public static bool getCommand = false; //true if robot sends command
+
+	//Manages music commands from the robot
+	void robotMusicController () {
+
+		if (getCommand == true) {
+
+			enableMusic = RobotEnableMusic;
+			Mute = RobotMute;
+			loopTrack = RobotLoopTrack;
+
+			skipTrack = RobotSkipTrack;
+			if (skipTrack == true) {
+				triggerNextTrack = true;
+			}
+
+			backTrack = RobotBackTrack;
+			if (backTrack == true) {
+				thisJukeBox.Stop();
+			}
+			restartTrack = RobotRestartTrack;
+			if (restartTrack == true) {
+				thisJukeBox.Stop();
+			}
+
+			getCommand = false; //end command execution
+
+		} else {
+
+			//Reset Varialbes after getting commands
+			RobotEnableMusic = enableMusic;
+			RobotMute = Mute;
+			RobotLoopTrack = loopTrack;
+			RobotSkipTrack = skipTrack;
+			RobotBackTrack = backTrack;
+			RobotRestartTrack = restartTrack;
+
+		}
+	}
 
 	public bool enableMusic; //enables music if true
-	public bool loopTrack;//loops the current track
+	public static bool RobotEnableMusic = false;
 
-	bool triggerNextTrack;//Triggers next track if song is looping
 	public AudioClip[] Songs; //All Songs
 	int tracks; //Index of tracks in the JukeBox
 	AudioSource thisJukeBox; //References the audio source of this game Unity Game Object
+	bool nextTrack; //returns true if jukebox is ready for the next track
+	bool triggerNextTrack;//Triggers next track if song is looping
 
+	public bool loopTrack;//loops the current track
+	public static bool RobotLoopTrack;
 	bool Mute; //Mutes the current track
-	bool nextTrack; //true if next track
-	bool skipTrack; //True if skipping to next track
+	public static bool RobotMute;
+	bool skipTrack; //Skip to the next track
+	public static bool RobotSkipTrack;
 	bool backTrack; //True if skpping backrward
-	
+	public static bool RobotBackTrack;
 	bool restartTrack; //trickers restarting a track
+	public static bool RobotRestartTrack;
 
 	int playTrack = -1; //index of next track to play
 	float songLength; //Length of the current song
@@ -45,6 +90,7 @@ public class jukeBox : MonoBehaviour {
 	void Update () {
 
 		//If music is enabled, play music, otherwise DONT!
+		robotMusicController();
 		if (enableMusic == true) {
 			playMusic();
 		} else {
