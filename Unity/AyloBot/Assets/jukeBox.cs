@@ -52,6 +52,11 @@ public class jukeBox : MonoBehaviour {
 	bool nextTrack; //returns true if jukebox is ready for the next track
 	bool triggerNextTrack;//Triggers next track if song is looping
 
+	//DISPLAY SONG NAMES
+	public string thisSongName;
+	public string[] SongNames;
+	public TextMesh showSongName;
+
 	public bool loopTrack;//loops the current track
 	public static bool RobotLoopTrack;
 	bool Mute; //Mutes the current track
@@ -73,13 +78,16 @@ public class jukeBox : MonoBehaviour {
 		Mute = false;
 		enableMusic = true; //This should be tied to a static global variable at some point.
 		tracks = Songs.Length;
-		Debug.Log("Number of Songs: " + tracks);
+		//Debug.Log("Number of Songs: " + tracks);
 		nextTrack = false;
 		skipTrack = false;
 		loopTrack = false;
 		triggerNextTrack = false;
 		restartTrack = false;
 		backTrack = false;
+		thisSongName = "";
+		//showSongName = showSongName.gameObject.GetComponent<TextMesh>();
+
 	}
 	
 	void Start () {
@@ -95,6 +103,7 @@ public class jukeBox : MonoBehaviour {
 			playMusic();
 		} else {
 			thisJukeBox.Stop();
+			showSongName.text = "Music Off";
 		}
 	}
 
@@ -106,14 +115,14 @@ public class jukeBox : MonoBehaviour {
 			AudioClip currentSong = Songs[newTrack()];
 			thisJukeBox.clip = currentSong;
 			thisJukeBox.Play ();
-			Debug.Log("Song is Playing");
+			//Debug.Log("Song is Playing");
 			songLength = currentSong.length;
-			Debug.Log ("Track Length: " + songLength);
+			//Debug.Log ("Track Length: " + songLength);
 			
 			//skip to the next song if "skipped"
 		} else if (skipTrack == true && thisJukeBox.isPlaying) {
 			thisJukeBox.Stop();
-			Debug.Log("Skipping to next track");
+			//Debug.Log("Skipping to next track");
 			skipTrack = false;
 		}
 		
@@ -148,7 +157,9 @@ public class jukeBox : MonoBehaviour {
 			nextTrack = false;
 			triggerNextTrack = false;
 		}
-		
+		thisSongName = SongNames[playTrack];
+		showSongName.text = thisSongName;
+		//Debug.Log("Songs: " + thisSongName);
 		return playTrack;
 	}
 	
