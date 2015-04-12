@@ -115,6 +115,18 @@ public class RobotStuff
 			jukeBox.getCommand = true;
 			jukeBox.RobotLoopTrack = false;
 			//unloops the current track
+
+			//ROBOT VIRTUAL EQUIPMENT --------------------
+		} else if (command.Is ("equip sword") || command.Is ("sword get")) {
+			if (Equipment.robotEquipSword == false) {
+				Equipment.robotEquipSword = true;
+			} else if (Equipment.robotEquipSword == true) {
+				Equipment.robotEquipSword = false;
+			}
+
+		} else if (command.Is ("attack") && Equipment.robotEquipSword == true) {
+			Equipment.robotSwordAttack = true;
+			Debug.Log("Attack with the sword yo!");
 		}
 
 	}

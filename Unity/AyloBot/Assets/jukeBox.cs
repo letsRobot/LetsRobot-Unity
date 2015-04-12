@@ -76,7 +76,7 @@ public class jukeBox : MonoBehaviour {
 		//Get the Audio Source assigned to this game object
 		thisJukeBox = this.gameObject.GetComponent<AudioSource>();
 		Mute = false;
-		enableMusic = true; //This should be tied to a static global variable at some point.
+		enableMusic = false; //This should be tied to a static global variable at some point.
 		tracks = Songs.Length;
 		//Debug.Log("Number of Songs: " + tracks);
 		nextTrack = false;
