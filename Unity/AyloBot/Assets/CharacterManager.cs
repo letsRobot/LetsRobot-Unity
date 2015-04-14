@@ -21,8 +21,11 @@ public class CharacterManager : MonoBehaviour {
 	public Emotes emote;
 	public GameObject[] characterObjects;
 	CharacterID[] makeCharacter;
+	int characterIndex;
 
 	public bool playScript;
+
+	GameObject itsAlive;
 
 	// Use this for initialization
 	void Start () {
@@ -33,38 +36,27 @@ public class CharacterManager : MonoBehaviour {
 			characterObjects[i].SetActive(false);
 			makeCharacter[i] = characterObjects[i].GetComponent<CharacterID>();
 			Debug.Log ("Character ID's: " + makeCharacter.Length);
+
+		}
+		findEmote(character);
+		if (itsAlive != null) {
+			itsAlive.SetActive(true);
+
 		}
 	}
 
-	void whoAmI () {
+	void findEmote (Characters myCharacter) {
 
-		switch (character) {
-		case Characters.OPERATOR:
-			Debug.Log("I am the Operator, nice to meet you!");
-//			foreach (GameObject characterObject in characterObjects) {
-//				if (characterObject.GetComponent<CharacterID>().character == Characters.OPERATOR)
-//			}
-			break;
-		case Characters.ROBAD:
-			Debug.Log("I am Robad, and i hate you");
-			break;
-		default:
-			Debug.Log ("I am nobody, and i shouldn't be here");
-			break;
-		}
+		for (int i = 0; i < characterObjects.Length; i++) {
+			if (emote == makeCharacter[i].emote) {
+				itsAlive = characterObjects[i];
+				Debug.Log("Emote this character: " + i);
+			} 
+		} 
 
-		switch (emote) {
-		case Emotes.HAPPY:
-			Debug.Log("I am so happy!");
-			break;
-		case Emotes.WORRIED:
-			Debug.Log("I am a little worried");
-			break;
-		default:
-			Debug.Log("I feel nothing, do i even exist?");
-			break;
-		}
 	}
+
+
 	
 	// Update is called once per frame
 	void Update () {
