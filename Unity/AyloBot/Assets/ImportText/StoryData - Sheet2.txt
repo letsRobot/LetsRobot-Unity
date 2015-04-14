@@ -1,0 +1,5 @@
+Tag	Character	Emote	Line	Timer	SFX
+Hi	Operator	Happy	Guys, we have a lot to do today, so let's Robot!	10	derp
+Hi	Operator	Worried	I'm not sure if we are gonna make it today...	5	bad
+Robad	Operator	Worried	Don't be like that Robad, why you so mean?	10	Omg
+Robad	Robad	Angry	I don't like you, because i am bad. ... so bad!		
