@@ -2,66 +2,76 @@
 using System.Collections;
 
 public enum Characters {
-	
 	OPERATOR,
 	ROBAD,
-	
 }
 
 public enum Emotes {
-
 	HAPPY,
 	WORRIED,
-
 }
 
 public class CharacterManager : MonoBehaviour {
 
-	public Characters character;
-	public Emotes emote;
-	public GameObject[] characterObjects;
-	CharacterID[] makeCharacter;
-	int characterIndex;
+	public Characters character; //Character Name
+	public Emotes emote; //Character Emote
+	public GameObject[] characterObjects; //All HUD characters
+	CharacterID[] makeCharacter; //Stores all the characters with IDs attached to this object
 
-	public bool playScript;
+	public static bool playScene = false; //True when executing Scene
 
-	GameObject itsAlive;
+	GameObject itsAlive; //Current Active character
+
+	void updateCutScene() {
+
+		if (playScene == true) {
+	
+			if (itsAlive != null) {
+				itsAlive.SetActive(false);
+			}
+			findEmote(character);
+			if (itsAlive != null) {
+				//Debug.Log("I am activating this character: " + itsAlive.name);
+				//Debug.Log("Character Enum sayz: " + character.ToString() + " " + emote.ToString());
+				itsAlive.SetActive(true);
+			}
+			playScene = false;
+		}
+	}
 
 	// Use this for initialization
 	void Start () {
 
-		playScript = false;
+		playScene = false;
+		//creat array of Character ID's to match the number of attached character objects
 		makeCharacter = new CharacterID[characterObjects.Length];
 		for (int i = 0; i < characterObjects.Length; i++) {
+			//Let's make sure all the character objects are disabled
 			characterObjects[i].SetActive(false);
+			//Let's also get the CharacterID of each character object
 			makeCharacter[i] = characterObjects[i].GetComponent<CharacterID>();
-			Debug.Log ("Character ID's: " + makeCharacter.Length);
-
-		}
-		findEmote(character);
-		if (itsAlive != null) {
-			itsAlive.SetActive(true);
+			//Debug.Log ("Character ID's: " + makeCharacter.Length);
 
 		}
 	}
 
+	//find the character with the associated emote
 	void findEmote (Characters myCharacter) {
 
+		//Debug.Log("Character Enum sayz (find emote): " + myCharacter.ToString() + " " + emote.ToString());
 		for (int i = 0; i < characterObjects.Length; i++) {
-			if (emote == makeCharacter[i].emote) {
+			if (emote == makeCharacter[i].emote && myCharacter == makeCharacter[i].character) {
 				itsAlive = characterObjects[i];
-				Debug.Log("Emote this character: " + i);
+				//Debug.Log("Emote this character: " + itsAlive.name);
 			} 
 		} 
-
 	}
-
 
 	
 	// Update is called once per frame
 	void Update () {
 
+		updateCutScene();
 
-	
 	}
 }

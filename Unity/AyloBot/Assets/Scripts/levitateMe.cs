@@ -10,6 +10,7 @@ public class levitateMe : MonoBehaviour {
 	bool nextHover; //triggers movement up or down
 
 	bool startHovering;
+	//public bool offsetOrigin;
 
 	void Start () {
 
@@ -17,6 +18,14 @@ public class levitateMe : MonoBehaviour {
 		origin = transform.localPosition;
 		//print(origin.y);
 		target = new Vector3(origin.x, origin.y + levRange, origin.z);
+
+		//change starting direction
+//		if (offsetOrigin == true) {
+//			Vector3 switchPositions = target;
+//			target = origin;
+//			origin = switchPositions;
+//			this.gameObject.transform.position = origin;
+//		}
 		nextHover = true;
 		startHovering = false;
 		StartCoroutine("randomStartTime");
