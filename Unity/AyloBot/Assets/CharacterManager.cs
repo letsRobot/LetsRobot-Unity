@@ -19,6 +19,7 @@ public class CharacterManager : MonoBehaviour {
 	CharacterID[] makeCharacter; //Stores all the characters with IDs attached to this object
 
 	public static bool playScene = false; //True when executing Scene
+	public static bool sceneActive = false;
 
 	GameObject itsAlive; //Current Active character
 
@@ -35,7 +36,14 @@ public class CharacterManager : MonoBehaviour {
 				//Debug.Log("Character Enum sayz: " + character.ToString() + " " + emote.ToString());
 				itsAlive.SetActive(true);
 			}
+
+		} else if (sceneActive == false && itsAlive != null) {
+			itsAlive.SetActive(false);
+		}
+		if (playScene == true && sceneActive == false) {
 			playScene = false;
+			sceneActive = true;
+			StartCoroutine("sceneTimer");
 		}
 	}
 
@@ -73,5 +81,10 @@ public class CharacterManager : MonoBehaviour {
 
 		updateCutScene();
 
+	}
+
+	IEnumerator sceneTimer () {
+		yield return new WaitForSeconds (ImportSpreadSheet.sceneTime);
+		sceneActive = false;
 	}
 }

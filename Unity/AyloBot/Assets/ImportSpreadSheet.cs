@@ -2,6 +2,8 @@
 using System.Collections;
 using System.IO;
 
+//This class imports the story data spread sheet, and also sort of manages the HUD appearance.
+//I should have named it something more appropriate : D
 public class ImportSpreadSheet : MonoBehaviour {
 
 	public TextAsset StoryData;
@@ -28,6 +30,12 @@ public class ImportSpreadSheet : MonoBehaviour {
 	int nameTab = 1; //Character Name
 	int emoteTab = 2; //Character Emote
 	int lineTab = 3; //Character's Line
+	int timerTab = 4; //How long to play the scene for
+
+	public static float sceneTime;
+	float getTime;
+	public float customTime = 4.5f;
+	
 
 
 	void Awake () {
@@ -50,11 +58,28 @@ public class ImportSpreadSheet : MonoBehaviour {
 			displayName.text = storeName;
 			//Convert the string StoreName into a Characters Enum type
 			Characters parseCharacter = (Characters)System.Enum.Parse (typeof(Characters), storeName);
+			Emotes parseEmote = (Emotes)System.Enum.Parse(typeof(Emotes), getString (emoteTab));
+			string storeFloat = getString(timerTab);
+			if (storeFloat != "") {
+				getTime = float.Parse(storeFloat);
+			} else {
+				getTime = customTime;
+			}
+
+			Debug.Log("Scene Time: " + getTime);
 			manageCharacter.character = parseCharacter;
+			manageCharacter.emote = parseEmote;
+			sceneTime = getTime;
 			//Tell the character manager to go ahead and display the character
 			CharacterManager.playScene = true;
 
+
 			CheckLine = PrintThisLine;
+		}
+
+		if (CharacterManager.sceneActive != true) {
+			displayText.text = "";
+			displayName.text = "";
 		}
 	}
 
