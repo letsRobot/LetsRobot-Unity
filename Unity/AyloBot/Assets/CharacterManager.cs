@@ -22,11 +22,12 @@ public class CharacterManager : MonoBehaviour {
 	public static bool sceneActive = false;
 
 	GameObject itsAlive; //Current Active character
+	bool setTimer = false;
 
 	void updateCutScene() {
 
 		if (playScene == true) {
-	
+
 			if (itsAlive != null) {
 				itsAlive.SetActive(false);
 			}
@@ -36,13 +37,17 @@ public class CharacterManager : MonoBehaviour {
 				//Debug.Log("Character Enum sayz: " + character.ToString() + " " + emote.ToString());
 				itsAlive.SetActive(true);
 			}
-
-		} else if (sceneActive == false && itsAlive != null) {
-			itsAlive.SetActive(false);
-		}
-		if (playScene == true && sceneActive == false) {
 			playScene = false;
 			sceneActive = true;
+			setTimer = true;
+		} 
+
+		if (sceneActive == false && itsAlive != null) {
+			itsAlive.SetActive(false);
+		}
+
+		if (setTimer == true) {
+			setTimer = false;
 			StartCoroutine("sceneTimer");
 		}
 	}
@@ -83,7 +88,8 @@ public class CharacterManager : MonoBehaviour {
 
 	}
 
-	IEnumerator sceneTimer () {
+	 IEnumerator sceneTimer () {
+
 		yield return new WaitForSeconds (ImportSpreadSheet.sceneTime);
 		sceneActive = false;
 	}

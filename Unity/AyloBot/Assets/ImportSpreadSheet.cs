@@ -65,19 +65,17 @@ public class ImportSpreadSheet : MonoBehaviour {
 			} else {
 				getTime = customTime;
 			}
-
-			Debug.Log("Scene Time: " + getTime);
 			manageCharacter.character = parseCharacter;
 			manageCharacter.emote = parseEmote;
 			sceneTime = getTime;
+			Debug.Log("Scene Time: " + getTime);
 			//Tell the character manager to go ahead and display the character
 			CharacterManager.playScene = true;
-
-
+	
 			CheckLine = PrintThisLine;
 		}
 
-		if (CharacterManager.sceneActive != true) {
+		if (CharacterManager.sceneActive != true && CharacterManager.playScene == false) {
 			displayText.text = "";
 			displayName.text = "";
 		}
