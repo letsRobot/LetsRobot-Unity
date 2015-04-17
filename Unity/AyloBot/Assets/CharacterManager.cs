@@ -22,7 +22,7 @@ public class CharacterManager : MonoBehaviour {
 	public static bool sceneActive = false;
 
 	GameObject itsAlive; //Current Active character
-	bool setTimer = false;
+	bool setTimer = false; //triggers the countdown to time out the current scene
 
 	void updateCutScene() {
 
@@ -48,6 +48,10 @@ public class CharacterManager : MonoBehaviour {
 
 		if (setTimer == true) {
 			setTimer = false;
+			if (runSceneTimer == true) {
+				//Reset Scene Timer if it's already running.
+				StopCoroutine("sceneTimer");
+			}
 			StartCoroutine("sceneTimer");
 		}
 	}
@@ -88,9 +92,11 @@ public class CharacterManager : MonoBehaviour {
 
 	}
 
+	bool runSceneTimer = false; //Basically used to check if coroutine is running to prevent multiple instances of it.
 	 IEnumerator sceneTimer () {
-
+		runSceneTimer = true;
 		yield return new WaitForSeconds (ImportSpreadSheet.sceneTime);
+		runSceneTimer = false;
 		sceneActive = false;
 	}
 }
