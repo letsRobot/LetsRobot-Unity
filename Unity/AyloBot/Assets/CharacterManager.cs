@@ -98,5 +98,7 @@ public class CharacterManager : MonoBehaviour {
 		yield return new WaitForSeconds (ImportSpreadSheet.sceneTime);
 		runSceneTimer = false;
 		sceneActive = false;
+		ImportSpreadSheet.sendLine = false;
+		Debug.Log("Send Line Complete");
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.IO;
+using System.Collections.Generic;
 
 //This class imports the story data spread sheet, and also sort of manages the HUD appearance.
 //I should have named it something more appropriate : D
@@ -27,6 +28,7 @@ public class ImportSpreadSheet : MonoBehaviour {
 	bool wrongLine;
 
 	//Which values are located at which tabs
+	int tagTab = 0; //tag associated with scene
 	int nameTab = 1; //Character Name
 	int emoteTab = 2; //Character Emote
 	int lineTab = 3; //Character's Line
@@ -35,21 +37,87 @@ public class ImportSpreadSheet : MonoBehaviour {
 	public static float sceneTime;
 	float getTime;
 	public float customTime = 4.5f;
-	
 
+
+	//These variables manage a sequence of cut-scenes, 
+	//aka: characters having conversation or multiple dialogues
+	bool indexSequence = false; //triggers indexing lines for a cut-scene sequence
+	bool playSequence = false; //returns true if a cut-scene sequence is ready to play
+	public string getSequence = "";
+	string checkSequence = "";
+	List<int> cueLines; //line numbers associated with a sequence
+	//int spreadSheetIndex; //number of lines on the spread sheet.
+
+
+	int lineCount;
+
+	void cueSequence () {
+
+		//Play a set of lines all with the same tags
+		if (checkSequence != getSequence) {
+
+			//Debug.Log("Check Sequence = " + checkSequence);
+			indexSequence = true;
+			lineCount = 0;
+
+			cueLines = new List<int>();
+			sequenceStep = 0;
+
+			for (int i = 0; i < FetchLine; i++) {
+				lineCount = i;
+				if (getString(tagTab) == getSequence) {
+					cueLines.Add(i);
+				}
+			}
+			foreach (int derp in cueLines) {
+				Debug.Log(getSequence + " At Line: " + derp);
+			} if (cueLines.Count != 0) {
+				playSequence = true;
+			} 
+			indexSequence = false;
+			checkSequence = getSequence;
+		}
+		runSequence();
+	}
+
+	public static bool sendLine = false;
+	int sequenceStep = 0;
+
+	void runSequence() {
+
+		if (playSequence == true && sendLine == false) {
+			sendLine = true;
+
+			if (sequenceStep < cueLines.Count) {
+				PrintThisLine = cueLines[sequenceStep];
+				Debug.Log("Sending line: " + sequenceStep);
+				sequenceStep++;
+			} else {
+				playSequence = false;
+				Debug.Log("Play Sequence now over");
+			}
+		}
+	}
 
 	void Awake () {
 
 		wrongLine = false;
 		ReadSheet = StoryData.text;
 		initializeStory();
+		//initializeParse();
 		//Debug.Log("Number of Lines: " + LineIndex);
 		PrintThisLine = 0;
 		LineGetter(0);
+		indexSequence = false;
+		playSequence = false;
+		sendLine = false;
 	}
 
 	// Update is called once per frame
 	void Update () {
+
+		cueSequence();
+
 
 		//Make sure the line we print is in range to avoid errors.
 		if (CheckLine != PrintThisLine && PrintThisLine != 0 && PrintThisLine < FetchLine) {
@@ -97,9 +165,17 @@ public class ImportSpreadSheet : MonoBehaviour {
 	}
 
 	//Gets the desired tab from any particular line in StoryData
+	string[] indexTabs;
 	string fetchTab (int whichTab) {
-		string[] indexTabs = LineGetter(PrintThisLine).Split("\t"[0]);
-		Debug.Log("Number of tabs: " + indexTabs.Length);
+
+		if (indexSequence == true) {
+			//if checking lines for a cut-scene, do this!
+			indexTabs = LineGetter(lineCount).Split("\t"[0]);
+		} else { 
+			//Fetching individual lines
+			indexTabs = LineGetter(PrintThisLine).Split("\t"[0]);
+		}
+		//Debug.Log("Number of tabs: " + indexTabs.Length);
 
 		if (wrongLine == true) {
 			string oops = "Zomg Internal error! We are going down in flames!";
