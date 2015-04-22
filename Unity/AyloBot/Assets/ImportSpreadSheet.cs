@@ -71,8 +71,11 @@ public class ImportSpreadSheet : MonoBehaviour {
 			}
 			foreach (int derp in cueLines) {
 				Debug.Log(getSequence + " At Line: " + derp);
-			} if (cueLines.Count != 0) {
+			} 
+
+			if (cueLines.Count != 0) {
 				playSequence = true;
+				Debug.Log("Play sequence is now true");
 			} 
 			indexSequence = false;
 			checkSequence = getSequence;
@@ -83,10 +86,17 @@ public class ImportSpreadSheet : MonoBehaviour {
 	public static bool sendLine = false;
 	int sequenceStep = 0;
 
+	int trackThing = 0;
 	void runSequence() {
 
+		//Debug.Log("Run Sequence is Updating");
+		if (sendLine == false) {
+			Debug.Log("Send Line is False");
+		}
 		if (playSequence == true && sendLine == false) {
 			sendLine = true;
+			trackThing++;
+			Debug.Log("Step: " + trackThing + " Cue Lines Count: " + cueLines.Count + " Sequence step: " + sequenceStep);
 
 			if (sequenceStep < cueLines.Count) {
 				PrintThisLine = cueLines[sequenceStep];
@@ -97,6 +107,7 @@ public class ImportSpreadSheet : MonoBehaviour {
 				Debug.Log("Play Sequence now over");
 			}
 		}
+		//Debug.Log("Sequence Step: " + sequenceStep);
 	}
 
 	void Awake () {

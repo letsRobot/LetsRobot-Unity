@@ -51,6 +51,8 @@ public class CharacterManager : MonoBehaviour {
 			if (runSceneTimer == true) {
 				//Reset Scene Timer if it's already running.
 				StopCoroutine("sceneTimer");
+				runSceneTimer = false;
+				ImportSpreadSheet.sendLine = false;
 			}
 			StartCoroutine("sceneTimer");
 		}
