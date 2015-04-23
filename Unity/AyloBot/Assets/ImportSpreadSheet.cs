@@ -70,12 +70,12 @@ public class ImportSpreadSheet : MonoBehaviour {
 				}
 			}
 			foreach (int derp in cueLines) {
-				Debug.Log(getSequence + " At Line: " + derp);
+				//Debug.Log(getSequence + " At Line: " + derp);
 			} 
 
 			if (cueLines.Count != 0) {
 				playSequence = true;
-				Debug.Log("Play sequence is now true");
+				//Debug.Log("Play sequence is now true");
 			} 
 			indexSequence = false;
 			checkSequence = getSequence;
@@ -91,20 +91,21 @@ public class ImportSpreadSheet : MonoBehaviour {
 
 		//Debug.Log("Run Sequence is Updating");
 		if (sendLine == false) {
-			Debug.Log("Send Line is False");
+			//Debug.Log("Send Line is False");
 		}
 		if (playSequence == true && sendLine == false) {
 			sendLine = true;
 			trackThing++;
-			Debug.Log("Step: " + trackThing + " Cue Lines Count: " + cueLines.Count + " Sequence step: " + sequenceStep);
+			//Debug.Log("Step: " + trackThing + " Cue Lines Count: " + cueLines.Count + " Sequence step: " + sequenceStep);
 
 			if (sequenceStep < cueLines.Count) {
 				PrintThisLine = cueLines[sequenceStep];
-				Debug.Log("Sending line: " + sequenceStep);
+				//Debug.Log("Sending line: " + sequenceStep);
 				sequenceStep++;
 			} else {
 				playSequence = false;
-				Debug.Log("Play Sequence now over");
+				sendLine = false;
+				//Debug.Log("Play Sequence now over");
 			}
 		}
 		//Debug.Log("Sequence Step: " + sequenceStep);
@@ -147,7 +148,7 @@ public class ImportSpreadSheet : MonoBehaviour {
 			manageCharacter.character = parseCharacter;
 			manageCharacter.emote = parseEmote;
 			sceneTime = getTime;
-			Debug.Log("Scene Time: " + getTime);
+			//Debug.Log("Scene Time: " + getTime);
 			//Tell the character manager to go ahead and display the character
 			CharacterManager.playScene = true;
 	

@@ -51,8 +51,8 @@ public class CharacterManager : MonoBehaviour {
 			if (runSceneTimer == true) {
 				//Reset Scene Timer if it's already running.
 				StopCoroutine("sceneTimer");
-				runSceneTimer = false;
-				ImportSpreadSheet.sendLine = false;
+				//runSceneTimer = false;
+				//ImportSpreadSheet.sendLine = false;
 			}
 			StartCoroutine("sceneTimer");
 		}
@@ -101,6 +101,8 @@ public class CharacterManager : MonoBehaviour {
 		runSceneTimer = false;
 		sceneActive = false;
 		ImportSpreadSheet.sendLine = false;
-		Debug.Log("Send Line Complete");
+		//Debug.Log("Send Line Complete");
+
+		yield return null;
 	}
 }
