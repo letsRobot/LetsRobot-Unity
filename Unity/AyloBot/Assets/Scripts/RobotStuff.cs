@@ -126,7 +126,13 @@ public class RobotStuff
 
 		} else if (command.Is ("attack") && Equipment.robotEquipSword == true) {
 			Equipment.robotSwordAttack = true;
-			Debug.Log("Attack with the sword yo!");
+			//Debug.Log("Attack with the sword yo!");
+		}
+
+		//CUT SCENE MANAGEMENT ----------------------------
+		else if (command.Is("/cue #w")) {
+			//Debug.Log(command.GetWord(0));
+			ImportSpreadSheet.cueRobot = command.GetWord(0);
 		}
 
 	}

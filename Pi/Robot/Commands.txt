@@ -183,4 +183,8 @@ earthquake
 0
 /music unloop
 
+10
+0
+/cue #w
+
 # This comment should be placed after all command descriptions.

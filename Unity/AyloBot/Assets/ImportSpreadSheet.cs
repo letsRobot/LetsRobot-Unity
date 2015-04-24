@@ -51,8 +51,14 @@ public class ImportSpreadSheet : MonoBehaviour {
 
 	int lineCount;
 
+	public static string cueRobot = "";
+	public bool debugPlayer = false;
+
 	void cueSequence () {
 
+		if (debugPlayer == false) {
+			getSequence = cueRobot;
+		}
 		//Play a set of lines all with the same tags
 		if (checkSequence != getSequence) {
 
