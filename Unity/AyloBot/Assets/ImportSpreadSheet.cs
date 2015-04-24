@@ -52,7 +52,7 @@ public class ImportSpreadSheet : MonoBehaviour {
 	int lineCount;
 
 	public static string cueRobot = "";
-	public bool debugPlayer = false;
+	public bool debugPlayer;
 
 	void cueSequence () {
 
@@ -131,6 +131,45 @@ public class ImportSpreadSheet : MonoBehaviour {
 		sendLine = false;
 	}
 
+	public int lineLength = 5;
+	// Wrap text by line height
+	private string textWrap(string input, int lineLength){
+		
+		// Split string by char " "         
+		string[] words = input.Split(" "[0]);
+		
+		// Prepare result
+		string result = "";
+		
+		// Temp line string
+		string line = "";
+		
+		// for each all words        
+		foreach(string s in words){
+			// Append current word into line
+			string temp = line + " " + s;
+			
+			// If line length is bigger than lineLength
+			if(temp.Length > lineLength){
+				
+				// Append current line into result
+				result += line + "\n";
+				// Remain word append into new line
+				line = s;
+			}
+			// Append current word into current line
+			else {
+				line = temp;
+			}
+		}
+		
+		// Append last line into result        
+		result += line;
+		
+		// Remove first " " char
+		return result.Substring(1,result.Length-1);
+	}
+	
 	// Update is called once per frame
 	void Update () {
 
@@ -139,7 +178,9 @@ public class ImportSpreadSheet : MonoBehaviour {
 
 		//Make sure the line we print is in range to avoid errors.
 		if (CheckLine != PrintThisLine && PrintThisLine != 0 && PrintThisLine < FetchLine) {
-			displayText.text = getString(lineTab);
+			string prepLine = getString(lineTab);
+			//displayText.text = getString(lineTab);
+			displayText.text = textWrap(prepLine, lineLength);
 			string storeName = getString(nameTab);
 			displayName.text = storeName;
 			//Convert the string StoreName into a Characters Enum type
