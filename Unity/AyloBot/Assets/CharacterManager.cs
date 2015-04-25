@@ -2,13 +2,19 @@
 using System.Collections;
 
 public enum Characters {
+	UNKNOWN,
 	OPERATOR,
 	ROBAD,
 }
 
 public enum Emotes {
+	DEFAULT,
 	HAPPY,
 	WORRIED,
+	CONFUSED,
+	ANXIOUS,
+	THINKING,
+	CONFIDENT,
 }
 
 public class CharacterManager : MonoBehaviour {
