@@ -48,6 +48,8 @@ public class ImportSpreadSheet : MonoBehaviour {
 	List<int> cueLines; //line numbers associated with a sequence
 	//int spreadSheetIndex; //number of lines on the spread sheet.
 
+	public static bool sceneFromRobot = false;
+
 
 	int lineCount;
 

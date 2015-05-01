@@ -1,8 +1,11 @@
 Tag	Character	Emote	Line	Timer	SFX
 Hi	UNKNOWN	DEFAULT	Testing...		
 Hi	UNKNOWN	DEFAULT	Test test... Is this thing on? .... OH!		
-Hi	OPERATOR	HAPPY	Guys, we have a lot to do today, so let's Robot!	2	derp
+Hi	OPERATOR	HAPPY	Guys, we have a lot to do today, so let's Robot!	10	derp
 Hi	OPERATOR	WORRIED	I'm not sure if we are gonna make it today...	2	bad
 Robad	OPERATOR	WORRIED	Don't be like that Robad, why you so mean?	2	Omg
-Robad	ROBAD	HAPPY	I don't like you, because i am bad. ... so bad!	2
+Robad	ROBAD	DEFAULT	I don't like you, because i am bad. ... so bad!	2
 Hi	UNKNOWN	DEFAULT	I have no idea what i am doing whatsover, nope not a single clue...	
+Test	OPERATOR	HAPPY	I am a happy OP!	2	Derp
+Test	OPERATOR	WORRIED	I am a worried OP!	2	Derp
+Test	OPERATOR	THINKING	I am thinking, hold on!	2	Derp
