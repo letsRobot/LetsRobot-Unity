@@ -48,7 +48,7 @@ public class ImportSpreadSheet : MonoBehaviour {
 	List<int> cueLines; //line numbers associated with a sequence
 	//int spreadSheetIndex; //number of lines on the spread sheet.
 
-	public static bool sceneFromRobot = false;
+
 
 
 	int lineCount;
@@ -171,6 +171,12 @@ public class ImportSpreadSheet : MonoBehaviour {
 		// Remove first " " char
 		return result.Substring(1,result.Length-1);
 	}
+
+	public static bool sceneFromRobot = false;
+	public static Characters charFromRobot = Characters.UNKNOWN;
+	public static Emotes emoteFromRobot = Emotes.DEFAULT;
+	public static string nameFromRobot = "UNKNOWN";
+	public static string lineFromRobot = "Transmission to robot interupted";
 	
 	// Update is called once per frame
 	void Update () {
@@ -179,21 +185,45 @@ public class ImportSpreadSheet : MonoBehaviour {
 
 
 		//Make sure the line we print is in range to avoid errors.
-		if (CheckLine != PrintThisLine && PrintThisLine != 0 && PrintThisLine < FetchLine) {
-			string prepLine = getString(lineTab);
+		if (CheckLine != PrintThisLine && PrintThisLine != 0 && PrintThisLine < FetchLine || sceneFromRobot == true) {
+
+			string storeName = "Default";
+			string prepLine = "Transmission Interupted";
+			Emotes parseEmote = Emotes.DEFAULT;
+			Characters parseCharacter = Characters.UNKNOWN;
+			getTime = customTime;
+
+			if (sceneFromRobot == true) {
+
+				storeName = nameFromRobot;
+				prepLine = lineFromRobot;
+				parseEmote = emoteFromRobot;
+				parseCharacter = charFromRobot;
+				sceneFromRobot = false;
+
+
+			} else {
+				storeName = getString(nameTab);
+				prepLine = getString(lineTab);
+				parseEmote = (Emotes)System.Enum.Parse(typeof(Emotes), getString (emoteTab));
+				parseCharacter = (Characters)System.Enum.Parse (typeof(Characters), storeName);
+				string storeFloat = getString(timerTab);
+				if (storeFloat != "") {
+					getTime = float.Parse(storeFloat);
+				} else {
+					getTime = customTime;
+				}
+
+			}
+
 			//displayText.text = getString(lineTab);
 			displayText.text = textWrap(prepLine, lineLength);
-			string storeName = getString(nameTab);
 			displayName.text = storeName;
 			//Convert the string StoreName into a Characters Enum type
-			Characters parseCharacter = (Characters)System.Enum.Parse (typeof(Characters), storeName);
-			Emotes parseEmote = (Emotes)System.Enum.Parse(typeof(Emotes), getString (emoteTab));
-			string storeFloat = getString(timerTab);
-			if (storeFloat != "") {
-				getTime = float.Parse(storeFloat);
-			} else {
-				getTime = customTime;
-			}
+
+
+
+
 			manageCharacter.character = parseCharacter;
 			manageCharacter.emote = parseEmote;
 			sceneTime = getTime;

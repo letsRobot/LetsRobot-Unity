@@ -133,8 +133,39 @@ public class RobotStuff
 		else if (command.Is("/cue #w")) {
 			//Debug.Log(command.GetWord(0));
 			ImportSpreadSheet.cueRobot = command.GetWord(0);
-		}
 
+			//CLEAN THESE UP LATER!
+		} else if (command.Is ("/op #s")) {
+			ImportSpreadSheet.sceneFromRobot = true;
+			ImportSpreadSheet.charFromRobot = Characters.OPERATOR;
+			ImportSpreadSheet.emoteFromRobot = Emotes.HAPPY;
+			ImportSpreadSheet.nameFromRobot = "OPERATOR";
+			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+		} else if (command.Is ("/opthink #s")) {
+			ImportSpreadSheet.sceneFromRobot = true;
+			ImportSpreadSheet.charFromRobot = Characters.OPERATOR;
+			ImportSpreadSheet.emoteFromRobot = Emotes.THINKING;
+			ImportSpreadSheet.nameFromRobot = "OPERATOR";
+			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+		} else if (command.Is ("/opworry #s")) {
+			ImportSpreadSheet.sceneFromRobot = true;
+			ImportSpreadSheet.charFromRobot = Characters.OPERATOR;
+			ImportSpreadSheet.emoteFromRobot = Emotes.WORRIED;
+			ImportSpreadSheet.nameFromRobot = "OPERATOR";
+			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+		} else if (command.Is ("/robad #s")) {
+			ImportSpreadSheet.sceneFromRobot = true;
+			ImportSpreadSheet.charFromRobot = Characters.ROBAD;
+			ImportSpreadSheet.emoteFromRobot = Emotes.DEFAULT;
+			ImportSpreadSheet.nameFromRobot = "ROBAD";
+			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+		} else if (command.Is ("/unknown #s")) {
+			ImportSpreadSheet.sceneFromRobot = true;
+			ImportSpreadSheet.charFromRobot = Characters.UNKNOWN;
+			ImportSpreadSheet.emoteFromRobot = Emotes.DEFAULT;
+			ImportSpreadSheet.nameFromRobot = "UNKNOWN";
+			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+		}
 	}
 
 	BarrelRoller barrelRoller = new BarrelRoller();
