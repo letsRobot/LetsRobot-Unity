@@ -5,6 +5,8 @@ public enum Characters {
 	UNKNOWN,
 	OPERATOR,
 	ROBAD,
+	VELLA,
+	SHAY,
 }
 
 public enum Emotes {

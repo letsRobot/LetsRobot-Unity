@@ -165,6 +165,18 @@ public class RobotStuff
 			ImportSpreadSheet.emoteFromRobot = Emotes.DEFAULT;
 			ImportSpreadSheet.nameFromRobot = "UNKNOWN";
 			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+		} else if (command.Is ("/vella #s")) {
+			ImportSpreadSheet.sceneFromRobot = true;
+			ImportSpreadSheet.charFromRobot = Characters.VELLA;
+			ImportSpreadSheet.emoteFromRobot = Emotes.DEFAULT;
+			ImportSpreadSheet.nameFromRobot = "VELLA";
+			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+		} else if (command.Is ("/shay #s")) {
+			ImportSpreadSheet.sceneFromRobot = true;
+			ImportSpreadSheet.charFromRobot = Characters.SHAY;
+			ImportSpreadSheet.emoteFromRobot = Emotes.DEFAULT;
+			ImportSpreadSheet.nameFromRobot = "SHAY";
+			ImportSpreadSheet.lineFromRobot = command.GetString(0);
 		}
 	}
 
