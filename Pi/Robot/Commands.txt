@@ -187,4 +187,42 @@ earthquake
 0
 /cue #w
 
+0
+0
+attack
+attack!
+a
+
+10
+0
+/cue #w
+
+10
+0
+/op #s
+
+10
+0
+/opthink #s
+
+10
+0
+/opworry #s
+
+10
+0
+/robad #s
+
+10
+0
+/unknown #s
+
+10
+0
+/vella #s
+
+10
+0
+/shay #s
+
 # This comment should be placed after all command descriptions.

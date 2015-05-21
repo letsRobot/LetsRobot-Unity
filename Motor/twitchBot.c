@@ -116,6 +116,11 @@ int main()
       else if (c == 'k') // poke
       {
       }
+
+      else if (c == 'a')
+      {
+        Attack();
+      }
       else if (c == 'o') //open gripper
       {
         gripState = 0;
@@ -140,7 +145,20 @@ void Grip(int gripTicks, int gripSpeed)
   servo_angle(16, gripTicks);
   //dprint(term, "Using Gripper");
   //pause(gripSpeed);
+  dprint(term, "ok\n");
   gripState = -1;
+
+}
+
+void Attack() {
+  servo_angle(16, 1800);
+  pause(750);
+  servo_angle(16, 0);
+  pause(750);
+  //servo_stop();
+  servo_disable(16);
+  dprint(term, "ok\n");
+  //servo_start();
 }
 
 void Drive(int leftTicks, int rightTicks, int speed)

@@ -142,6 +142,11 @@ Command("echo")
    unity.SendVariableMessage("echo", std::to_string(distance));
 }
 
+Command("attack")
+{
+   robot.Send("a");
+}
+
 Lights lights("/dev/i2c-1", 0x04);
 const auto numberOfLights = 16;
 const uint8_t maxIntensity = 100;

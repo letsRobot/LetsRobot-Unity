@@ -124,10 +124,10 @@ public class RobotStuff
 				Equipment.robotEquipSword = false;
 			}
 
-		} else if (command.Is ("attack") && Equipment.robotEquipSword == true) {
-			Equipment.robotSwordAttack = true;
+		} //else if (command.Is ("attack") && Equipment.robotEquipSword == true) {
+			//Equipment.robotSwordAttack = true;
 			//Debug.Log("Attack with the sword yo!");
-		}
+		//}
 
 		//CUT SCENE MANAGEMENT ----------------------------
 		else if (command.Is("/cue #w")) {
