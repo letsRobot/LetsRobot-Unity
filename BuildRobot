@@ -1,8 +1,3 @@
 #!/bin/bash
 
-if [ ! -d "bin" ]; then
-   mkdir "bin"
-fi
-
-g++-4.7 -std=c++0x -Wall -pthread -I Lib -o bin/Robot -O3 Pi/Robot/*.cpp Lib/*.cpp
-
+make anyway
