@@ -53,13 +53,6 @@ Servo left_servo, right_servo;
 
 Adafruit_NeoPixel eyes = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-enum {
-    STATE_LED_INDEX,
-    STATE_RED,
-    STATE_BLUE,
-    STATE_GREEN
-};
-
 int eye_state;
 
 /*
@@ -150,13 +143,14 @@ void set_color(int pixel, int R, int G, int B) {
     else
         pixel -= 1;
 
-    if (pixel > NUM_LEDS && pixel != 0xFF)
+    if (pixel > NUM_LEDS && pixel != 0xFF - 1)
         return;
 
-    if (pixel == 0xFF) {
+    if (pixel == 0xFF - 1) {
         for (i = 0; i < NUM_LEDS; i++)
             eyes.setPixelColor(i, R, G, B);
     }
+
     else {
         eyes.setPixelColor(led_map[pixel], R, G, B);
     }
@@ -176,22 +170,22 @@ void receiveData(int num_bytes) {
         uint8_t val = Wire.read();
 
         switch (eye_state) {
-            STATE_LED_INDEX:
+            case 0:
                 pixel = val;
                 eye_state++;
                 break;
 
-            STATE_RED:
+            case 1:
                 R = val;
                 eye_state++;
                 break;
 
-            STATE_BLUE:
+            case 2:
                 G = val;
                 eye_state++;
                 break;
 
-            STATE_GREEN:
+            case 3:
                 B = val;
                 eye_state = 0;
                 set_color(pixel, R, G, B);
