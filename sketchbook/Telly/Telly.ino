@@ -25,18 +25,36 @@
 
 #define OK_STRING   "ok\n"
 
+#define TEENSY  // Are we running on a teensy, or an Uno?
+
+#ifdef TEENSY
+    #define INTERNAL_LED    11
+#else
+    #define INTERNAL_LED    13
+#endif
+
 /*
  * Continuous rotation servos for the two wheels.  Because of the way the
  * servos had to be mounted, they're facing different directions.  With this
  * library, 90 is the stop value, 0 is full-speed in one direction, and 180
  * is full-speed in the other direction.
  */
-#define LEFT_PIN        9
+#ifdef TEENSY
+    #define LEFT_PIN        8
+#else
+    #define LEFT_PIN        9
+#endif
+
 #define LEFT_STOP       95
 #define LEFT_FORWARD    (LEFT_STOP  -45)
 #define LEFT_BACKWARD   (LEFT_STOP  +45)
+
 //
-#define RIGHT_PIN       10
+#ifdef TEENSY
+    #define RIGHT_PIN       10
+#else
+    #define RIGHT_PIN       10
+#endif
 #define RIGHT_STOP      95
 #define RIGHT_FORWARD   (RIGHT_STOP +45)
 #define RIGHT_BACKWARD  (RIGHT_STOP -45)
@@ -48,7 +66,11 @@ Servo left_servo, right_servo;
 
 // LED NeoPixel strip for the eyes, driven by the Raspberry Pi speaking I2C
 #define I2C_ADDRESS     0x04
-#define LED_PIN         6
+#ifdef TEENSY
+    #define LED_PIN         3
+#else
+    #define LED_PIN         6
+#endif
 #define NUM_LEDS        9*2
 
 Adafruit_NeoPixel eyes = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
@@ -98,6 +120,9 @@ void setup() {
     Wire.begin(I2C_ADDRESS);
     Wire.onReceive(receiveData);
     Wire.onRequest(sendData);
+
+    pinMode(INTERNAL_LED, OUTPUT);
+    digitalWrite(INTERNAL_LED, HIGH);
 }
 
 void OK() {
