@@ -71,7 +71,7 @@ Servo left_servo, right_servo;
 #else
     #define LED_PIN         6
 #endif
-#define NUM_LEDS        9*2
+#define NUM_LEDS        (9*2)
 
 Adafruit_NeoPixel eyes = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -110,7 +110,6 @@ void setup() {
 
     eyes.begin();
     eyes.show();
-    pinMode(LED_PIN, OUTPUT);
 
     /*
      * Become an I2C slave.  First change the bitrate to 400khz, which must be
@@ -162,24 +161,23 @@ void loop() {
 void set_color(int pixel, int R, int G, int B) {
     int i;
 
-    // The human-readable index numbers are 1-based, not 0-based
-    if (pixel < 1)
-        return;
-    else
-        pixel -= 1;
-
-    if (pixel > NUM_LEDS && pixel != 0xFF - 1)
-        return;
-
-    if (pixel == 0xFF - 1) {
+    if (pixel == 0xFF) {
         for (i = 0; i < NUM_LEDS; i++)
             eyes.setPixelColor(i, R, G, B);
+        eyes.show();
+        return;
     }
 
-    else {
-        eyes.setPixelColor(led_map[pixel], R, G, B);
-    }
+    /*
+     * The human-readable pixel index is 1 based, so the valid range
+     * is [1, NUM_LEDS], not [0, NUM_LEDS-1].  After input validation,
+     * subtract one from index to use a stanard 0-based array.
+     */
+    if (! (1 <= pixel && pixel <= NUM_LEDS))
+        return;
 
+    pixel -= 1;
+    eyes.setPixelColor(led_map[pixel], R, G, B);
     eyes.show();
 }
 
