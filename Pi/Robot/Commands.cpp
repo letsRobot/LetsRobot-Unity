@@ -148,7 +148,7 @@ Command("attack")
 }
 
 Lights lights("/dev/i2c-1", 0x04);
-const auto numberOfLights = 16;
+const auto numberOfLights = 16; //How do i make this a setting?
 const uint8_t maxIntensity = 100;
 
 Command("light #i #w")
@@ -230,7 +230,8 @@ void Light(CommandFunctionParameters, int light, const std::string & color)
       {"magenta", {255, 0,   255}},
       {"cyan",    {0,   255, 255}},
       {"white",   {255, 255, 255}},
-      {"orange", {255,125,  0}}
+      {"orange",  {255, 125, 0  }},
+      {"pink",    {255, 125, 125}}
    };
 
    const auto iColor = colors.find(color);
