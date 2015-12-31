@@ -45,17 +45,20 @@
  * is full-speed in the other direction.
  */
 #define LEFT_STOP       95
-#define LEFT_FORWARD    (LEFT_STOP  -45)
-#define LEFT_BACKWARD   (LEFT_STOP  +45)
+#define LEFT_FORWARD    (LEFT_STOP  -33)
+#define LEFT_BACKWARD   (LEFT_STOP  +33)
 //
 #define RIGHT_STOP      95
-#define RIGHT_FORWARD   (RIGHT_STOP +45)
-#define RIGHT_BACKWARD  (RIGHT_STOP -45)
+#define RIGHT_FORWARD   (RIGHT_STOP +33)
+#define RIGHT_BACKWARD  (RIGHT_STOP -33)
 
 Servo left_servo, right_servo;
 
-// How long in milliseconds to drive the motors per direction command.
+// How long in milliseconds to drive the motors when moving forward and back
 #define DRIVE_TIME 1000
+
+// How long in milliseconds to drive the motors when moving left and right
+#define TURN_TIME 500
 
 // LED NeoPixel strip for the eyes, driven by the Raspberry Pi speaking I2C
 #define I2C_ADDRESS      0x04
@@ -142,8 +145,8 @@ void loop() {
         switch (c) {
                 case 'f': move(LEFT_FORWARD,  RIGHT_FORWARD);  delay(DRIVE_TIME); stop(); break;
                 case 'b': move(LEFT_BACKWARD, RIGHT_BACKWARD); delay(DRIVE_TIME); stop(); break;
-                case 'l': move(LEFT_BACKWARD, RIGHT_FORWARD);  delay(DRIVE_TIME); stop(); break;
-                case 'r': move(LEFT_FORWARD,  RIGHT_BACKWARD); delay(DRIVE_TIME); stop(); break;
+                case 'l': move(LEFT_BACKWARD, RIGHT_FORWARD);  delay(TURN_TIME); stop(); break;
+                case 'r': move(LEFT_FORWARD,  RIGHT_BACKWARD); delay(TURN_TIME); stop(); break;
 
                 case 'X': eye_state = 0; break;
         }
