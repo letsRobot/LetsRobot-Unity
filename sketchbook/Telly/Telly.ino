@@ -122,6 +122,31 @@ void setup() {
     }
 }
 
+#ifdef TEENSY
+/*
+ * Teensy reset code from https://www.pjrc.com/teensy/jump_to_bootloader.html
+ */
+void reset(void) {
+    volatile static int barrier;
+    Serial.println("Resetting");
+    delay(100);
+    barrier++;
+
+    cli();
+    UDCON = 1;
+    USBCON = (1<<FRZCLK);
+    UCSR1B = 0;
+    delay(100);
+    EIMSK = 0; PCICR = 0; SPCR = 0; ACSR = 0; EECR = 0; ADCSRA = 0;
+    TIMSK0 = 0; TIMSK1 = 0; TIMSK3 = 0; TIMSK4 = 0; UCSR1B = 0; TWCR = 0;
+    DDRB = 0; DDRC = 0; DDRD = 0; DDRE = 0; DDRF = 0; TWCR = 0;
+    PORTB = 0; PORTC = 0; PORTD = 0; PORTE = 0; PORTF = 0;
+    asm volatile("jmp 0x7E00");
+
+    Serial.println("Did the reset fail?");
+}
+#endif
+
 void OK() {
     Serial.print(OK_STRING);
 }
@@ -145,10 +170,14 @@ void loop() {
         switch (c) {
                 case 'f': move(LEFT_FORWARD,  RIGHT_FORWARD);  delay(DRIVE_TIME); stop(); break;
                 case 'b': move(LEFT_BACKWARD, RIGHT_BACKWARD); delay(DRIVE_TIME); stop(); break;
-                case 'l': move(LEFT_BACKWARD, RIGHT_FORWARD);  delay(TURN_TIME); stop(); break;
-                case 'r': move(LEFT_FORWARD,  RIGHT_BACKWARD); delay(TURN_TIME); stop(); break;
+                case 'l': move(LEFT_BACKWARD, RIGHT_FORWARD);  delay(TURN_TIME);  stop(); break;
+                case 'r': move(LEFT_FORWARD,  RIGHT_BACKWARD); delay(TURN_TIME);  stop(); break;
 
                 case 'X': eye_state = 0; break;
+
+                #ifdef TEENSY
+                case '#': reset(); break;
+                #endif
         }
     }
 }
