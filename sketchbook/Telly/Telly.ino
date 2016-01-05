@@ -45,12 +45,12 @@
  * is full-speed in the other direction.
  */
 #define LEFT_STOP       95
-#define LEFT_FORWARD    (LEFT_STOP  -33)
-#define LEFT_BACKWARD   (LEFT_STOP  +33)
+#define LEFT_FORWARD    (LEFT_STOP  -10)
+#define LEFT_BACKWARD   (LEFT_STOP  +10)
 //
 #define RIGHT_STOP      95
-#define RIGHT_FORWARD   (RIGHT_STOP +33)
-#define RIGHT_BACKWARD  (RIGHT_STOP -33)
+#define RIGHT_FORWARD   (RIGHT_STOP +10)
+#define RIGHT_BACKWARD  (RIGHT_STOP -10)
 
 Servo left_servo, right_servo;
 
@@ -58,7 +58,7 @@ Servo left_servo, right_servo;
 #define DRIVE_TIME 1000
 
 // How long in milliseconds to drive the motors when moving left and right
-#define TURN_TIME 500
+#define TURN_TIME 250
 
 // LED NeoPixel strip for the eyes, driven by the Raspberry Pi speaking I2C
 #define I2C_ADDRESS      0x04
