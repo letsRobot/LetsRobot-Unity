@@ -7,5 +7,5 @@ fi
 cp Pi/Stream/Cam bin/Cam
 chmod +x bin/Cam
 
-g++-4.7 -std=c++0x -Wall -Wno-sign-compare -pthread -I Lib -o bin/Stream -O3 Pi/Stream/*.cpp Lib/*.cpp
+g++ -std=c++0x -Wall -Wno-sign-compare -pthread -I Lib -o bin/Stream -O3 Pi/Stream/*.cpp Lib/*.cpp
 

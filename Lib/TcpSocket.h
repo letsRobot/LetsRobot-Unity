@@ -306,6 +306,9 @@ class TcpServerSocket
          serverAddress.sin_addr.s_addr = INADDR_ANY;
          serverAddress.sin_port = htons(port);
 
+        int enable = 1;
+        setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
+
          if(bind(serverSocket, (sockaddr *)&serverAddress, sizeof(serverAddress)) == -1)
             TcpThrow(TcpSocketException::FailedToBind);
 
