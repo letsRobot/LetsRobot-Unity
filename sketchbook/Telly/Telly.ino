@@ -28,10 +28,15 @@
 #define TEENSY  // Are we running on a teensy, or an Uno?
 
 #ifdef TEENSY
-    #define INTERNAL_LED    11
+    #define LED_PIN         3
+    #define LEFT_PIN        8
+    #define RIGHT_PIN       10
 #else
-    #define INTERNAL_LED    13
+    #define LED_PIN         6
+    #define LEFT_PIN        9
+    #define RIGHT_PIN       10
 #endif
+
 
 /*
  * Continuous rotation servos for the two wheels.  Because of the way the
@@ -39,39 +44,26 @@
  * library, 90 is the stop value, 0 is full-speed in one direction, and 180
  * is full-speed in the other direction.
  */
-#ifdef TEENSY
-    #define LEFT_PIN        8
-#else
-    #define LEFT_PIN        9
-#endif
-
 #define LEFT_STOP       95
-#define LEFT_FORWARD    (LEFT_STOP  -45)
-#define LEFT_BACKWARD   (LEFT_STOP  +45)
-
+#define LEFT_FORWARD    (LEFT_STOP  -10)
+#define LEFT_BACKWARD   (LEFT_STOP  +10)
 //
-#ifdef TEENSY
-    #define RIGHT_PIN       10
-#else
-    #define RIGHT_PIN       10
-#endif
 #define RIGHT_STOP      95
-#define RIGHT_FORWARD   (RIGHT_STOP +45)
-#define RIGHT_BACKWARD  (RIGHT_STOP -45)
+#define RIGHT_FORWARD   (RIGHT_STOP +10)
+#define RIGHT_BACKWARD  (RIGHT_STOP -10)
 
 Servo left_servo, right_servo;
 
-// How long in milliseconds to drive the motors per direction command.
+// How long in milliseconds to drive the motors when moving forward and back
 #define DRIVE_TIME 1000
 
+// How long in milliseconds to drive the motors when moving left and right
+#define TURN_TIME 250
+
 // LED NeoPixel strip for the eyes, driven by the Raspberry Pi speaking I2C
-#define I2C_ADDRESS     0x04
-#ifdef TEENSY
-    #define LED_PIN         3
-#else
-    #define LED_PIN         6
-#endif
-#define NUM_LEDS        (9*2)
+#define I2C_ADDRESS      0x04
+#define NUM_LEDS         (9*2)
+#define I2C_TIMEOUT_TIME 1000
 
 Adafruit_NeoPixel eyes = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -82,22 +74,22 @@ int eye_state;
  * address we'd like to give them.
  */
 int led_map[NUM_LEDS] = {
-         0,  // 0
-         3,  // 1
-         6,  // 2
-         1,  // 3
-         4,  // 4
-         7,  // 5
-         2,  // 6
-         5,  // 7
-         8,  // 8
-        15,  // 9
+         0,  //  0
+         3,  //  1
+         6,  //  2
+         1,  //  3
+         4,  //  4
+         7,  //  5
+         2,  //  6
+         5,  //  7
+         8,  //  8
+        15,  //  9
         16,  // 10
         17,  // 11
         12,  // 12
         13,  // 13
         14,  // 14
-        9,   // 15
+         9,  // 15
         10,  // 16
         11,  // 17
     };
@@ -120,9 +112,40 @@ void setup() {
     Wire.onReceive(receiveData);
     Wire.onRequest(sendData);
 
-    pinMode(INTERNAL_LED, OUTPUT);
-    digitalWrite(INTERNAL_LED, HIGH);
+    pinMode(LED_BUILTIN, OUTPUT);
+
+    for (int i = 0; i < 8; i++) {
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(33);
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(33);
+    }
 }
+
+#ifdef TEENSY
+/*
+ * Teensy reset code from https://www.pjrc.com/teensy/jump_to_bootloader.html
+ */
+void reset(void) {
+    volatile static int barrier;
+    Serial.println("Resetting");
+    delay(100);
+    barrier++;
+
+    cli();
+    UDCON = 1;
+    USBCON = (1<<FRZCLK);
+    UCSR1B = 0;
+    delay(100);
+    EIMSK = 0; PCICR = 0; SPCR = 0; ACSR = 0; EECR = 0; ADCSRA = 0;
+    TIMSK0 = 0; TIMSK1 = 0; TIMSK3 = 0; TIMSK4 = 0; UCSR1B = 0; TWCR = 0;
+    DDRB = 0; DDRC = 0; DDRD = 0; DDRE = 0; DDRF = 0; TWCR = 0;
+    PORTB = 0; PORTC = 0; PORTD = 0; PORTE = 0; PORTF = 0;
+    asm volatile("jmp 0x7E00");
+
+    Serial.println("Did the reset fail?");
+}
+#endif
 
 void OK() {
     Serial.print(OK_STRING);
@@ -147,9 +170,14 @@ void loop() {
         switch (c) {
                 case 'f': move(LEFT_FORWARD,  RIGHT_FORWARD);  delay(DRIVE_TIME); stop(); break;
                 case 'b': move(LEFT_BACKWARD, RIGHT_BACKWARD); delay(DRIVE_TIME); stop(); break;
+                case 'l': move(LEFT_BACKWARD, RIGHT_FORWARD);  delay(TURN_TIME);  stop(); break;
+                case 'r': move(LEFT_FORWARD,  RIGHT_BACKWARD); delay(TURN_TIME);  stop(); break;
 
-                case 'l': move(LEFT_BACKWARD, RIGHT_FORWARD);  delay(DRIVE_TIME); stop(); break;
-                case 'r': move(LEFT_FORWARD,  RIGHT_BACKWARD); delay(DRIVE_TIME); stop(); break;
+                case 'X': eye_state = 0; break;
+
+                #ifdef TEENSY
+                case '#': reset(); break;
+                #endif
         }
     }
 }
@@ -188,6 +216,18 @@ void sendData() {
 void receiveData(int num_bytes) {
     static int R, G, B;
     static int pixel;
+    static unsigned long last_read;
+
+    /*
+     * A timeout event, to help avoid out-of-sync errors with the Pi.  If we
+     * haven't heard anything from the Pi in over half a second, go back to
+     * state 0, assuming the next byte we're gonig to read is the start of a
+     * new LED command.
+     */
+    if (millis() - last_read > I2C_TIMEOUT_TIME)
+        eye_state = 0;
+
+    last_read = millis();
 
     while (Wire.available()) {
         uint8_t val = Wire.read();
