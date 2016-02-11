@@ -109,7 +109,7 @@ public class InputData : MonoBehaviour {
 						Debug.Log (Constants.Port1);
 						textStep = -1;
 						getText = false;
-						Application.LoadLevel("runStream2");
+						Application.LoadLevel("runTelly");
 					}
 				}
 

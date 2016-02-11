@@ -37,65 +37,57 @@ public class RobotStuff
 	public void Command(RobotCommand command, IDictionary<string, string> variables, RobotMessageSender robot)
 	{
 		//BARREL ROLL
-		if(command.Is("barrel roll"))
-		{
-			if(!barrelRoller.IsRolling())
-			{
-				robot.SendMessage("/say Weeeeee!!!");
+		if (command.Is ("barrel roll")) {
+			if (!barrelRoller.IsRolling ()) {
+				robot.SendMessage ("/say Weeeeee!!!");
 
-				barrelRoller.SetSecondsPerRotation(4);
-				barrelRoller.StartBarrelRoll();
+				barrelRoller.SetSecondsPerRotation (4);
+				barrelRoller.StartBarrelRoll ();
 			}
 		}
 
 		//EARTHQUAKE
-		else if(command.Is("earthquake"))
-		{
-			if(!earthquaker.IsQuaking())
-			{
-				robot.SendMessage("/say EARTHQUAKE!!!");
+		else if (command.Is ("earthquake")) {
+			if (!earthquaker.IsQuaking ()) {
+				robot.SendMessage ("/say EARTHQUAKE!!!");
 
-				earthquaker.SetDurationInSeconds(5);
-				earthquaker.SetMagnitude(2);
-				earthquaker.StartEarthquake();
+				earthquaker.SetDurationInSeconds (5);
+				earthquaker.SetMagnitude (2);
+				earthquaker.StartEarthquake ();
 			}
 		}
 
 
 		//QUEST CONTROLS-----------------------------
-		else if(command.Is("/add quest #s"))
-			quests.Add(command.GetString(0));
-
-		else if(command.Is("/update quest #i #s"))
-			quests.Update(command.GetInteger(0), command.GetString(1));
-
-		else if(command.Is("/close quest #i"))
-			quests.Close(command.GetInteger(0));
-
-		else if(command.Is("/open quest #i"))
-			quests.Open(command.GetInteger(0));
-
-		else if(command.Is("/remove quest #i"))
-			quests.Remove(command.GetInteger(0));
+		else if (command.Is ("/add quest #s"))
+			quests.Add (command.GetString (0));
+		else if (command.Is ("/update quest #i #s"))
+			quests.Update (command.GetInteger (0), command.GetString (1));
+		else if (command.Is ("/close quest #i"))
+			quests.Close (command.GetInteger (0));
+		else if (command.Is ("/open quest #i"))
+			quests.Open (command.GetInteger (0));
+		else if (command.Is ("/remove quest #i"))
+			quests.Remove (command.GetInteger (0));
 
 
 		//MUSIC CONTROLS-----------------------------
-		else if(command.Is ("/music on")) {
+		else if (command.Is ("/music on")) {
 			jukeBox.getCommand = true;
 			jukeBox.RobotEnableMusic = true;
 			//robot.SendMessage("/say Music Toggled");
-		} else if(command.Is("/music off")) {
+		} else if (command.Is ("/music off")) {
 			jukeBox.getCommand = true;
 			jukeBox.RobotEnableMusic = false;
 		} else if (command.Is ("/music mute")) {
 			jukeBox.getCommand = true;
 			jukeBox.RobotMute = true;
 			//mute music
-		} else if (command.Is("/music unmute")) {
+		} else if (command.Is ("/music unmute")) {
 			jukeBox.getCommand = true;
 			jukeBox.RobotMute = false;
 			//unmute music
-		} else if (command.Is("/music next")) {
+		} else if (command.Is ("/music next")) {
 			jukeBox.getCommand = true;
 			jukeBox.RobotSkipTrack = true;
 			//skip to next track
@@ -103,7 +95,7 @@ public class RobotStuff
 			jukeBox.getCommand = true;
 			jukeBox.RobotBackTrack = true;
 			//skip to previous track
-		} else if(command.Is("/music restart")) {
+		} else if (command.Is ("/music restart")) {
 			jukeBox.getCommand = true;
 			jukeBox.RobotRestartTrack = true;
 			//restart the current track
@@ -130,9 +122,9 @@ public class RobotStuff
 		//}
 
 		//CUT SCENE MANAGEMENT ----------------------------
-		else if (command.Is("/cue #w")) {
+		else if (command.Is ("/cue #w")) {
 			//Debug.Log(command.GetWord(0));
-			ImportSpreadSheet.cueRobot = command.GetWord(0);
+			ImportSpreadSheet.cueRobot = command.GetWord (0);
 
 			//CLEAN THESE UP LATER!
 		} else if (command.Is ("/op #s")) {
@@ -140,43 +132,51 @@ public class RobotStuff
 			ImportSpreadSheet.charFromRobot = Characters.OPERATOR;
 			ImportSpreadSheet.emoteFromRobot = Emotes.HAPPY;
 			ImportSpreadSheet.nameFromRobot = "OPERATOR";
-			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+			ImportSpreadSheet.lineFromRobot = command.GetString (0);
 		} else if (command.Is ("/opthink #s")) {
 			ImportSpreadSheet.sceneFromRobot = true;
 			ImportSpreadSheet.charFromRobot = Characters.OPERATOR;
 			ImportSpreadSheet.emoteFromRobot = Emotes.THINKING;
 			ImportSpreadSheet.nameFromRobot = "OPERATOR";
-			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+			ImportSpreadSheet.lineFromRobot = command.GetString (0);
 		} else if (command.Is ("/opworry #s")) {
 			ImportSpreadSheet.sceneFromRobot = true;
 			ImportSpreadSheet.charFromRobot = Characters.OPERATOR;
 			ImportSpreadSheet.emoteFromRobot = Emotes.WORRIED;
 			ImportSpreadSheet.nameFromRobot = "OPERATOR";
-			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+			ImportSpreadSheet.lineFromRobot = command.GetString (0);
 		} else if (command.Is ("/robad #s")) {
 			ImportSpreadSheet.sceneFromRobot = true;
 			ImportSpreadSheet.charFromRobot = Characters.ROBAD;
 			ImportSpreadSheet.emoteFromRobot = Emotes.DEFAULT;
 			ImportSpreadSheet.nameFromRobot = "ROBAD";
-			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+			ImportSpreadSheet.lineFromRobot = command.GetString (0);
 		} else if (command.Is ("/unknown #s")) {
 			ImportSpreadSheet.sceneFromRobot = true;
 			ImportSpreadSheet.charFromRobot = Characters.UNKNOWN;
 			ImportSpreadSheet.emoteFromRobot = Emotes.DEFAULT;
 			ImportSpreadSheet.nameFromRobot = "UNKNOWN";
-			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+			ImportSpreadSheet.lineFromRobot = command.GetString (0);
 		} else if (command.Is ("/vella #s")) {
 			ImportSpreadSheet.sceneFromRobot = true;
 			ImportSpreadSheet.charFromRobot = Characters.VELLA;
 			ImportSpreadSheet.emoteFromRobot = Emotes.DEFAULT;
 			ImportSpreadSheet.nameFromRobot = "VELLA";
-			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+			ImportSpreadSheet.lineFromRobot = command.GetString (0);
 		} else if (command.Is ("/shay #s")) {
 			ImportSpreadSheet.sceneFromRobot = true;
 			ImportSpreadSheet.charFromRobot = Characters.SHAY;
 			ImportSpreadSheet.emoteFromRobot = Emotes.DEFAULT;
 			ImportSpreadSheet.nameFromRobot = "SHAY";
-			ImportSpreadSheet.lineFromRobot = command.GetString(0);
+			ImportSpreadSheet.lineFromRobot = command.GetString (0);
+
+		//Screen Management---------------------------------------------
+		} else if (command.Is ("/td")) {
+			Constants.updateTD = true;
+		} else if (command.Is ("/standby")) {
+			Constants.updateStandBy = true;
+		} else if (command.Is ("/gameover")) {
+			Constants.updateGameOver = true;
 		}
 	}
 

@@ -8,4 +8,4 @@ Robad	ROBAD	DEFAULT	I don't like you, because i am bad. ... so bad!	2
 Hi	UNKNOWN	DEFAULT	I have no idea what i am doing whatsover, nope not a single clue...	
 Test	OPERATOR	HAPPY	I am a happy OP!	2	Derp
 Test	OPERATOR	WORRIED	I am a worried OP!	2	Derp
-Test	OPERATOR	THINKING	I am thinking, hold on!	2	Derp
+Test	OPERATOR	THINKING	I am thinking, hold on!	5	Derp

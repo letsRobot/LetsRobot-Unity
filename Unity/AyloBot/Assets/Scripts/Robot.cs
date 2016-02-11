@@ -14,6 +14,10 @@ public class Robot : MonoBehaviour
 	public string executingCommandColor;
 	public string openQuestColor;
 	public string closedQuestColor;
+	public bool Telly;
+
+	int firstLED;
+	int lastLED;
 
 	//dictionary for tracking users and assigning them colors in chat
 	Dictionary<string, string> users = new Dictionary<string, string>();
@@ -26,6 +30,13 @@ public class Robot : MonoBehaviour
 		server = Constants.IP1;
 		robotMessages = new RobotMessages(server, port);
 		robotStuff = new RobotStuff();
+		if (Telly == true) {
+			firstLED = 1;
+			lastLED = 19;
+		} else {
+			firstLED = 0;
+			lastLED = 16;
+		}
 	}
 
 	public void OnApplicationQuit()
@@ -129,7 +140,8 @@ public class Robot : MonoBehaviour
 
 	void UpdateLeds()
 	{
-		for(int iLed = 0; iLed < 16; iLed++)
+		//Debug.Log ("Using Telly's Custom things, have to change values back to 0 & 16 for normal bots");
+		for(int iLed = firstLED; iLed < lastLED; iLed++)
 		{
 			try
 			{
