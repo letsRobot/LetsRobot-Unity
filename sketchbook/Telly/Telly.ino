@@ -2,41 +2,29 @@
 
 /*
  * Arduino sketch for Telly
- * (c) Copyright 2015 Let's Robot.
- *
- * This sketch is connected via serial to a Raspberry Pi, which sends one
- * character movement commands to move the robot in discrete chunks: 'f' for
- * forward, 'b' for backward, 'l' for left, 'r' for right.  The program on the
- * Pi is very limited, and will only accept output of "ok\n" to indicate a
- * command is done executing.  No other output may appear.  That program will
- * be updated in the future to be more robust.  The command set will be updated
- * then, too.
- *
- * The Pi also acts as an I2C master, sending LED color information.  The
- * protocol is just four bytes: the LED index number, and the red, green, and
- * blue values.  If the LED number is 0xFF, all of the LEDs are set.  When the
- * program on the Pi is updated, LED commands will come over the serial port,
- * too, and nothing will be speaking I2C.
+ * (c) Copyright 2016 Let's Robot.
  */
 
 #include <Servo.h>
-#include <Wire.h>
 #include <Adafruit_NeoPixel.h>
+#include <Wire.h>
 
-#define OK_STRING   "ok\n"
+#include "library.h"
+#include "config.h"
 
-#define TEENSY  // Are we running on a teensy, or an Uno?
+/***/
 
 #ifdef TEENSY
-    #define LED_PIN         3
+    #define GRIPPER_PIN     2
+    #define NEOPIXEL_PIN    3
     #define LEFT_PIN        8
     #define RIGHT_PIN       10
 #else
-    #define LED_PIN         6
+    #define GRIPPER_PIN     2222
+    #define NEOPIXEL_PIN    6
     #define LEFT_PIN        9
     #define RIGHT_PIN       10
 #endif
-
 
 /*
  * Continuous rotation servos for the two wheels.  Because of the way the
@@ -54,20 +42,21 @@
 
 Servo left_servo, right_servo;
 
-// How long in milliseconds to drive the motors when moving forward and back
-#define DRIVE_TIME 1000
+/*
+ * How long in milliseconds to drive the motors when moving forward and
+ * backward, and left and right.
+ */
+#define MAX_DRIVE_TIME      3000
+#define MAX_TURN_TIME       3000
+#define DEFAULT_DRIVE_TIME  1000
+#define DEFAULT_TURN_TIME    250
 
-// How long in milliseconds to drive the motors when moving left and right
-#define TURN_TIME 250
-
-// LED NeoPixel strip for the eyes, driven by the Raspberry Pi speaking I2C
+/*
+ * I2C, for supporting the old protocol's LED interface
+ */
 #define I2C_ADDRESS      0x04
 #define NUM_LEDS         (9*2)
 #define I2C_TIMEOUT_TIME 1000
-
-Adafruit_NeoPixel eyes = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
-
-int eye_state;
 
 /*
  * The mapping of LEDs as they appear on the NeoPixel strip, vs the human
@@ -94,105 +83,112 @@ int led_map[NUM_LEDS] = {
         11,  // 17
     };
 
-void setup() {
-    Serial.begin(9600);
+Adafruit_NeoPixel eyes = Adafruit_NeoPixel(NUM_LEDS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+int eye_state;
+bool eyes_no_show = false;
 
-    left_servo.attach(LEFT_PIN);
-    right_servo.attach(RIGHT_PIN);
 
-    eyes.begin();
-    eyes.show();
+/***/
 
-    /*
-     * Become an I2C slave.  First change the bitrate to 400khz, which must be
-     * set before calling Wire.begin().  Then set the I2C callback functions.
-     */
-    TWBR = 12;
-    Wire.begin(I2C_ADDRESS);
-    Wire.onReceive(receiveData);
-    Wire.onRequest(sendData);
-
-    pinMode(LED_BUILTIN, OUTPUT);
-
-    for (int i = 0; i < 8; i++) {
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(33);
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(33);
-    }
-}
-
-#ifdef TEENSY
 /*
- * Teensy reset code from https://www.pjrc.com/teensy/jump_to_bootloader.html
+ * Asyncrhonously scheduled stop.
+ *
+ * Values:
+ *    0   No stop scheduled
+ *    1   Stop immediately
+ *   >1   Stop when millis() is greater than this number
  */
-void reset(void) {
-    volatile static int barrier;
-    Serial.println("Resetting");
-    delay(100);
-    barrier++;
+unsigned long stop_time;
 
-    cli();
-    UDCON = 1;
-    USBCON = (1<<FRZCLK);
-    UCSR1B = 0;
-    delay(100);
-    EIMSK = 0; PCICR = 0; SPCR = 0; ACSR = 0; EECR = 0; ADCSRA = 0;
-    TIMSK0 = 0; TIMSK1 = 0; TIMSK3 = 0; TIMSK4 = 0; UCSR1B = 0; TWCR = 0;
-    DDRB = 0; DDRC = 0; DDRD = 0; DDRE = 0; DDRF = 0; TWCR = 0;
-    PORTB = 0; PORTC = 0; PORTD = 0; PORTE = 0; PORTF = 0;
-    asm volatile("jmp 0x7E00");
-
-    Serial.println("Did the reset fail?");
-}
-#endif
-
-void OK() {
-    Serial.print(OK_STRING);
-}
-
-void move(int left, int right) {
-    left_servo.write(left);
-    right_servo.write(right);
+void schedule_stop(unsigned long timer) {
+    if (timer > 1)
+        stop_time = millis() + timer;
+    else
+        stop_time = timer;
 }
 
 void stop(void) {
     left_servo.write(LEFT_STOP);
     right_servo.write(RIGHT_STOP);
+
+    /*
+     * If the value was 1, this is a special case, and the STOP is being
+     * executed immediately.  Return the normal OK string.  Otherwise, the
+     * stop is the result of a previously scheduled asynchronous movement
+     * command.  Return the asynchronous OK  string.
+     */
+
+    if (compat) {
+        OK();
+    }
+
+    else {
+        if (stop_time == 1)
+            OK();
+        else
+            redraw_prompt = true;
+            Serial.println("\rASYNC_OK");
+    }
+
+    stop_time = 0;
+}
+
+void move(int left, int right, int default_time) {
+    int duration;
+
+    duration = nextarg_int(10, MAX_DRIVE_TIME, default_time, -1);
+
+    if (duration < 0) {
+        Serial.println("ASYNC_ERR Invalid argument");
+        return;
+    }
+
+    if (! compat)
+        Serial.println("ASYNC_RUNNING");
+    left_servo.write(left);
+    right_servo.write(right);
+    schedule_stop(duration);
+}
+
+void heartbeat(void) {
+    if (0 < stop_time && stop_time < millis())
+        stop();
+}
+
+/***/
+
+void cmd_forward (void) { move(LEFT_FORWARD,  RIGHT_FORWARD,  DEFAULT_DRIVE_TIME); }
+void cmd_back    (void) { move(LEFT_BACKWARD, RIGHT_BACKWARD, DEFAULT_DRIVE_TIME); }
+void cmd_left    (void) { move(LEFT_BACKWARD, RIGHT_FORWARD,  DEFAULT_TURN_TIME);  }
+void cmd_right   (void) { move(LEFT_FORWARD,  RIGHT_BACKWARD, DEFAULT_TURN_TIME);  }
+
+void cmd_stop(void) {
+    if (stop_time)
+        schedule_stop(1);
+    heartbeat();
     OK();
 }
 
-void loop() {
-    char c;
+void cmd_led(void) {
+    int pixel = nextarg_int(0, 0xff, -1, -1);
+    int red   = nextarg_int(0, 0xff, -1, -1);
+    int green = nextarg_int(0, 0xff, -1, -1);
+    int blue  = nextarg_int(0, 0xff, -1, -1);
 
-    while (Serial.available()) {
-        c = Serial.read();
-        switch (c) {
-                case 'f': move(LEFT_FORWARD,  RIGHT_FORWARD);  delay(DRIVE_TIME); stop(); break;
-                case 'b': move(LEFT_BACKWARD, RIGHT_BACKWARD); delay(DRIVE_TIME); stop(); break;
-                case 'l': move(LEFT_BACKWARD, RIGHT_FORWARD);  delay(TURN_TIME);  stop(); break;
-                case 'r': move(LEFT_FORWARD,  RIGHT_BACKWARD); delay(TURN_TIME);  stop(); break;
-
-                case 'X': eye_state = 0; break;
-
-                #ifdef TEENSY
-                case '#': reset(); break;
-                #endif
-        }
-    }
-}
-
-/*
- * I2C callbacks
- */
-
-void set_color(int pixel, int R, int G, int B) {
     int i;
+
+    if (red < 0 || green < 0 || blue < 0 || pixel < 0) {
+        ERR("Invalid argument");
+        return;
+    }
 
     if (pixel == 0xFF) {
         for (i = 0; i < NUM_LEDS; i++)
-            eyes.setPixelColor(i, R, G, B);
-        eyes.show();
+            eyes.setPixelColor(i, red, green, blue);
+        servo_detach();
+        eyes_show();
+        servo_attach();
+        OK();
         return;
     }
 
@@ -202,14 +198,23 @@ void set_color(int pixel, int R, int G, int B) {
      * subtract one from index to use a stanard 0-based array.
      */
     if (! (1 <= pixel && pixel <= NUM_LEDS))
-        return;
+        return ERR("LED index out of range");
 
     pixel -= 1;
-    eyes.setPixelColor(led_map[pixel], R, G, B);
-    eyes.show();
+
+    eyes.setPixelColor(led_map[pixel], red, green, blue);
+    servo_detach();
+    eyes_show();
+    servo_attach();
+    OK();
 }
 
+/*
+ * I2C callbacks, for the old protocol
+ */
+
 void sendData() {
+    //verbose("I2C write eye_state %d", eye_state);
     Wire.write(eye_state);
 }
 
@@ -217,6 +222,8 @@ void receiveData(int num_bytes) {
     static int R, G, B;
     static int pixel;
     static unsigned long last_read;
+
+    //verbose("I2C receiveDat num_bytes %d", num_bytes);
 
     /*
      * A timeout event, to help avoid out-of-sync errors with the Pi.  If we
@@ -231,6 +238,7 @@ void receiveData(int num_bytes) {
 
     while (Wire.available()) {
         uint8_t val = Wire.read();
+        //verbose("I2C read %d", val);
 
         switch (eye_state) {
             case 0:
@@ -251,8 +259,116 @@ void receiveData(int num_bytes) {
             case 3:
                 B = val;
                 eye_state = 0;
-                set_color(pixel, R, G, B);
+                do_command(format("led %d %d %d %d", pixel, R, G, B));
                 break;
         }
     }
+}
+
+/***/
+
+#define EYE_BLINK_COLOR "25 10 10"
+
+void blink_open() {
+    eyes_no_show = true;
+    do_command("led 255 " EYE_BLINK_COLOR);
+    do_command("led   5 " "0 0 0");
+    do_command("led  14 " "0 0 0");
+    eyes_no_show = false;
+    eyes_show();
+}
+
+void blink_close () {
+    eyes_no_show = true;
+    do_command("led 255 0 0 0");
+
+    do_command("led   4 " EYE_BLINK_COLOR);
+    do_command("led   5 " EYE_BLINK_COLOR);
+    do_command("led   6 " EYE_BLINK_COLOR);
+
+    do_command("led  13 " EYE_BLINK_COLOR);
+    do_command("led  14 " EYE_BLINK_COLOR);
+    do_command("led  15 " EYE_BLINK_COLOR);
+    eyes_no_show = false;
+    eyes_show();
+}
+
+void cmd_blink() {
+    blink_open();   delay(350);
+    blink_close(); delay(100);
+
+    blink_open();   delay(350);
+    blink_close(); delay(100);
+
+    blink_open();
+}
+
+/***/
+
+void eyes_show() {
+    if (eyes_no_show)
+        return;
+    servo_detach();
+    eyes.show();
+    servo_attach();
+}
+
+void servo_attach() {
+    left_servo.attach(LEFT_PIN);
+    right_servo.attach(RIGHT_PIN);
+}
+
+void servo_detach() {
+    left_servo.detach();
+    right_servo.detach();
+}
+
+void setup() {
+    add_command("forward",  cmd_forward);
+    add_command("back",     cmd_back);
+    add_command("left",     cmd_left);
+    add_command("right",    cmd_right);
+    add_command("stop",     cmd_stop);
+    add_command("f",        cmd_forward);
+    add_command("b",        cmd_back);
+    add_command("l",        cmd_left);
+    add_command("r",        cmd_right);
+    add_command("s",        cmd_stop);
+    add_command("led",      cmd_led);
+    add_command("blink",    cmd_blink);
+
+    Serial.begin(19200);
+
+    /*
+     * For backwards compatability with the old protocol, only, which used I2C
+     * to control the LEDs.
+     *
+     * Become an I2C slave.  First change the bitrate to 400khz, which must be
+     * set before calling Wire.begin().  Then set the I2C callback functions.
+     */
+    TWBR = 12;
+    Wire.begin(I2C_ADDRESS);
+    Wire.onReceive(receiveData);
+    Wire.onRequest(sendData);
+
+    eyes.begin();
+    eyes_show();
+
+    servo_attach();
+
+    pinMode(LED_BUILTIN, OUTPUT);
+
+    for (int i = 0; i < 8; i++) {
+        digitalWrite(LED_BUILTIN, LOW);
+        delay(33);
+
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(33);
+    }
+
+    cmd_blink();
+}
+
+void loop() {
+    library_loop();
 }
