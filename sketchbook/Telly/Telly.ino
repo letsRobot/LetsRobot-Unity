@@ -267,7 +267,7 @@ void receiveData(int num_bytes) {
 
 /***/
 
-#define EYE_BLINK_COLOR "25 10 10"
+#define EYE_BLINK_COLOR "0 25 25"
 
 void blink_open() {
     eyes_no_show = true;
