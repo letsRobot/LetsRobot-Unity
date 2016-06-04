@@ -5,9 +5,12 @@ public class Quests
 {
 	public Quests()
 	{
-		var robot = GameObject.Find("Robot").GetComponent<Robot>();
-		openColor = robot.openQuestColor;
-		closedColor = robot.closedQuestColor;
+		//var robot = GameObject.Find("Robot").GetComponent<Robot>();
+		// 20160603 rtharp
+		// was in robot but moved to Constants
+		// as Quests is available when Robot isn't
+		openColor = Constants.openQuestColor;
+		closedColor = Constants.closedQuestColor;
 	}
 
 	public void Add(string quest)
@@ -15,7 +18,15 @@ public class Quests
 		quests.Add(new Quest(quest));
 		UpdateQuests();
 	}
-	
+
+	public void AddRichText(string questStr)
+	{
+		var quest = new Quest (questStr);
+		quest.richText=true;
+		quests.Add(quest);
+		UpdateQuests();
+	}
+
 	public void Update(int iQuest, string quest)
 	{
 		if(IsBadIndex(iQuest))
@@ -62,12 +73,14 @@ public class Quests
 
 			if(quest.closed)
 				color = closedColor;
-			
-			questsString += "<color=#" + color + ">";
 
-			questsString += quest.text + "\n";
-			
-			questsString += "</color>";
+			if (quest.richText) {
+				questsString += quest.text + "\n";
+			} else {
+				questsString += "<color=#" + color + ">";
+				questsString += quest.text + "\n";
+				questsString += "</color>";
+			}
 		}
 		
 		GameObject.Find("Quests").GetComponent<TextMesh>().text = questsString;
@@ -81,11 +94,13 @@ public class Quests
 	class Quest
 	{
 		public string text;
+		public bool richText;
 		public bool closed;
 		
 		public Quest(string text)
 		{
 			this.text = text;
+			this.richText=false;
 			closed = false;
 		}
 	}

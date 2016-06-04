@@ -9,7 +9,40 @@ public struct RobotChatMessage
 	public bool isExecuting;
 }
 
-class RobotMessages : RobotMessageReceiver, RobotMessageSender
+public struct InternalRobotMessage
+{
+	public InternalRobotMessage(string user, string message)
+	{
+		this.user          = user;
+		this.message       = message;
+		commandDescription = "";
+		commandId          = 0;
+		isCommand          = false;
+		isExecuting        = false;
+		newMessage         = false;
+	}
+	
+	public InternalRobotMessage(string user, string message, string commandDescription, int commandId)
+	{
+		this.user               = user;
+		this.message            = message;
+		this.commandDescription = commandDescription;
+		this.commandId          = commandId;
+		isCommand               = true;
+		isExecuting             = false;
+		newMessage              = false;
+	}
+	
+	public string user;
+	public string message;
+	public string commandDescription;
+	public int commandId;
+	public bool isCommand;
+	public bool isExecuting;
+	public bool newMessage;
+};
+
+public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 {
 	public RobotMessages(string server, int port)
 	{
@@ -99,7 +132,7 @@ class RobotMessages : RobotMessageReceiver, RobotMessageSender
 
 		lock(chatMessagesLock)
 		{
-			foreach(var message in chatMessages)
+			foreach(var message in Constants.roboStuff.chatMessages)
 			{
 				var chatMessage         = new RobotChatMessage();
 				chatMessage.user        = message.user;
@@ -118,7 +151,8 @@ class RobotMessages : RobotMessageReceiver, RobotMessageSender
 	{
 		lock(variablesLock)
 		{
-			return new Dictionary<string, string>(variables);
+			//return new Dictionary<string, string>(variables);
+			return new Dictionary<string, string>(Constants.roboStuff.variables);
 		}
 	}
 
@@ -128,7 +162,6 @@ class RobotMessages : RobotMessageReceiver, RobotMessageSender
 		{
 			IList<RobotCommand> returnCommands = commands;
 			commands = new List<RobotCommand>();
-
 			return returnCommands;
 		}
 	}
@@ -142,7 +175,7 @@ class RobotMessages : RobotMessageReceiver, RobotMessageSender
 	{
 		lock(chatMessagesLock)
 		{
-			chatMessages.Add(message);
+			Constants.roboStuff.chatMessages.Add(message);
 		}
 
 		TrimChatMessages();
@@ -161,16 +194,16 @@ class RobotMessages : RobotMessageReceiver, RobotMessageSender
 	{
 		lock(commandsLock)
 		{
-			for(int i = 0; i < chatMessages.Count; i++)
+			for(int i = 0; i < Constants.roboStuff.chatMessages.Count; i++)
 			{
-				var message = chatMessages[i];
+				var message = Constants.roboStuff.chatMessages[i];
 				
 				if(message.commandId == commandId)
 					message.isExecuting = isExecuting;
 				else
 					message.isExecuting = false;
 				
-				chatMessages[i] = message;
+				Constants.roboStuff.chatMessages[i] = message;
 			}
 		}
 	}
@@ -179,7 +212,8 @@ class RobotMessages : RobotMessageReceiver, RobotMessageSender
 	{
 		lock(variablesLock)
 		{
-			variables[variable] = value;
+			//variables[variable] = value;
+			Constants.roboStuff.variables[variable]=value;
 		}
 	}
 
@@ -187,42 +221,9 @@ class RobotMessages : RobotMessageReceiver, RobotMessageSender
 	{
 		lock(chatMessagesLock)
 		{
-			while(chatMessages.Count > maxMessageNumber)
-				chatMessages.RemoveAt(0);
+			while(Constants.roboStuff.chatMessages.Count > maxMessageNumber)
+				Constants.roboStuff.chatMessages.RemoveAt(0);
 		}
-	}
-
-	struct InternalRobotMessage
-	{
-		public InternalRobotMessage(string user, string message)
-		{
-			this.user          = user;
-			this.message       = message;
-			commandDescription = "";
-			commandId          = 0;
-			isCommand          = false;
-			isExecuting        = false;
-			newMessage         = false;
-		}
-
-		public InternalRobotMessage(string user, string message, string commandDescription, int commandId)
-		{
-			this.user               = user;
-			this.message            = message;
-			this.commandDescription = commandDescription;
-			this.commandId          = commandId;
-			isCommand               = true;
-			isExecuting             = false;
-			newMessage              = false;
-		}
-
-		public string user;
-		public string message;
-		public string commandDescription;
-		public int commandId;
-		public bool isCommand;
-		public bool isExecuting;
-		public bool newMessage;
 	}
 
 	RobotConnection connection;
@@ -230,7 +231,11 @@ class RobotMessages : RobotMessageReceiver, RobotMessageSender
 	object commandsLock                      = new object();
 	object variablesLock                     = new object();
 	int maxMessageNumber                     = 100;
-	IList<InternalRobotMessage> chatMessages = new List<InternalRobotMessage>();
 	IList<RobotCommand> commands             = new List<RobotCommand>();
-	IDictionary<string, string> variables    = new Dictionary<string, string>();
+	// 20160603 rtharp
+	// moved out to RobotStuff, so we can have multiple connecctions
+	// but only one set of chat & variable
+	// since we only have the one display of them
+	//IList<InternalRobotMessage> chatMessages = new List<InternalRobotMessage>();
+	//IDictionary<string, string> variables    = new Dictionary<string, string>();
 }

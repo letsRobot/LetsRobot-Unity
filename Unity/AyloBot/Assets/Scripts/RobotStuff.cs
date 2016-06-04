@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+
 // The Update and Command functions uses the following parameters:
 //
 // command
@@ -61,6 +62,8 @@ public class RobotStuff
 		//QUEST CONTROLS-----------------------------
 		else if (command.Is ("/add quest #s"))
 			quests.Add (command.GetString (0));
+		else if (command.Is ("/add richquest #s"))
+			quests.AddRichText (command.GetString (0));
 		else if (command.Is ("/update quest #i #s"))
 			quests.Update (command.GetInteger (0), command.GetString (1));
 		else if (command.Is ("/close quest #i"))
@@ -182,5 +185,9 @@ public class RobotStuff
 
 	BarrelRoller barrelRoller = new BarrelRoller();
 	EarthQuaker earthquaker = new EarthQuaker();
+	
 	Quests quests = new Quests();
+	// Used to be in RobotMessages
+	public IDictionary<string, string> variables    = new Dictionary<string, string>();
+	public IList<InternalRobotMessage> chatMessages = new List<InternalRobotMessage>();
 }

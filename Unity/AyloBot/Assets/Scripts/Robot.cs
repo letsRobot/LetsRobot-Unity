@@ -29,7 +29,8 @@ public class Robot : MonoBehaviour
 		//newUser = false;
 		server = Constants.IP1;
 		robotMessages = new RobotMessages(server, port);
-		robotStuff = new RobotStuff();
+		robotStuff = Constants.roboStuff;
+		//robotStuff = new RobotStuff();
 		if (Telly == true) {
 			firstLED = 1;
 			lastLED = 19;
@@ -65,6 +66,7 @@ public class Robot : MonoBehaviour
 	{
 		robotMessages.SetMaximumNumberOfMessages(numberOfChatMessages);
 		var chatMessages = robotMessages.GetChatMessages();
+		//var chatMessages2 = Constants.skyNetMessages.GetChatMessages();
 
 		var chat = GameObject.Find("Chat").GetComponent<TextMesh>();
 		chat.text = "";
@@ -76,8 +78,17 @@ public class Robot : MonoBehaviour
 
 			chat.text += ChatMessageToRichTextLine(message);
 		}
+		/*
+		foreach(var message in chatMessages2)
+		{
+			if(message.user == "jtv") // Ignore messages from Twitch itself.
+				continue;
+			
+			chat.text += ChatMessageToRichTextLine(message);
+		}
+		*/
 	}
-
+	
 	string ChatMessageToRichTextLine(RobotChatMessage message)
 	{
 		string richText = "";
