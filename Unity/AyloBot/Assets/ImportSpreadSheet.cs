@@ -77,9 +77,9 @@ public class ImportSpreadSheet : MonoBehaviour {
 					cueLines.Add(i);
 				}
 			}
-			foreach (int derp in cueLines) {
+			//foreach (int derp in cueLines) {
 				//Debug.Log(getSequence + " At Line: " + derp);
-			} 
+			//} 
 
 			if (cueLines.Count != 0) {
 				playSequence = true;
