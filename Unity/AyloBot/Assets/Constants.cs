@@ -11,6 +11,14 @@ public static class Constants {
 	public static int Port1 = 1234;
 	public static int UnityPort1 = 40000;
 
+	// has to be constants/global so skyNet & Robot connections can get at it
+	public static RobotStuff roboStuff=new RobotStuff();
+	// has to be constants/global so Robot class & skyNet can get at it
+	public static RobotMessages skyNetMessages=new RobotMessages("64.185.234.177", 40100);
+	// moved out of robot class
+	public static string openQuestColor="";
+	public static string closedQuestColor="";
+
 	//Unity stuff
 	public static bool TD = false;
 	public static bool updateTD = false;
@@ -22,3 +30,4 @@ public static class Constants {
 	//Robot stuff
 	public static bool telly = true;
 }
+
