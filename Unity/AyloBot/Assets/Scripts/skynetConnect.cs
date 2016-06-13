@@ -4,18 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using SimpleJSON;
 
-/*
-[Serializable]
-public class LetsDevices
-{
-	public string shortName;
-	public string internalIp;
-	public UInt64 last;
-	public string botVersion;
-}
-*/
-
 public class skynetConnect : MonoBehaviour {
+	
 	RobotMessages robotMessages;
 	bool gotDevices=false;
 	//bool running=false;
@@ -31,6 +21,7 @@ public class skynetConnect : MonoBehaviour {
 		robotMessages.SendMessage("login letsrobot");
 		//running = true;
 		refreshDevices();
+
 	}
 
 	// You can run this to refresh the variable from SkyNet
@@ -71,8 +62,6 @@ public class skynetConnect : MonoBehaviour {
 				//devicesList[i].internalIp
 			}
 			//Debug.Log (devices);
-			//LetsDevices myDevices = new LetsDevices();
-			//myDevices = JsonUtility.FromJson<LetsDevices>(variables["devices"]);
 			gotDevices=true;
 
 			// EXAMPLE, connect to first bot on the list
@@ -84,19 +73,20 @@ public class skynetConnect : MonoBehaviour {
 		// after it's created we need access to it
 		// so after creation it needs to hook with us
 		if (runTelly) {
-			var robot = GameObject.Find("Robot").GetComponent<Robot>();
-			Constants.roboStuff.Update(variables, robotMessages);
-			foreach (var command in robotMessages.GetCommands()) {
-				Constants.roboStuff.Command (command, variables, robotMessages);
+			if (GameObject.Find ("Robot")) {
+				Robot robot = GameObject.Find("Robot").GetComponent<Robot>();
+				Constants.roboStuff.Update(variables, robotMessages);
+					foreach (var command in robotMessages.GetCommands()) {
+						Constants.roboStuff.Command (command, variables, robotMessages); 
+				}
+					} else {
+					Debug.Log ("Still looking for robot");
+				}
 			}
-
 		}
-	}
 
 	void SelectDevice(string IP) {
 		Constants.IP1 = IP;
-		// 1234 is the default 
-		//Constants.Port1 = 1234;
 		runTelly = true;
 		Application.LoadLevel ("runTelly");
 	}
