@@ -15,15 +15,17 @@ public class Quests
 
 	public void Add(string quest)
 	{
-		quests.Add(new Quest(quest));
+		var questObj = new Quest (quest);
+		questObj.richText=false;
+		quests.Add(questObj);
 		UpdateQuests();
 	}
 
-	public void AddRichText(string questStr)
+	public void AddRichText(string quest)
 	{
-		var quest = new Quest (questStr);
-		quest.richText=true;
-		quests.Add(quest);
+		var questObj = new Quest (quest);
+		questObj.richText=true;
+		quests.Add(questObj);
 		UpdateQuests();
 	}
 
