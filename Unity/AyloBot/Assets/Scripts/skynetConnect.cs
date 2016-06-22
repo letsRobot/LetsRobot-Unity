@@ -87,8 +87,10 @@ public class skynetConnect : MonoBehaviour {
 
 	void SelectDevice(string IP) {
 		Constants.IP1 = IP;
+		robotMessages.SendMessage ("iam " + IP);
 		runTelly = true;
 		Application.LoadLevel ("runTelly");
+
 	}
 
 	void UIExample() {

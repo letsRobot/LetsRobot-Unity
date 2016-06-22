@@ -28,6 +28,6 @@ public static class Constants {
 	public static bool updateGameOver = false;
 
 	//Robot stuff
-	public static bool telly = true;
+	public static bool telly = false;
 }
 

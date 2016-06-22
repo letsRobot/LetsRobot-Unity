@@ -75,11 +75,15 @@ public class Quests
 				color = closedColor;
 
 			if (quest.richText) {
-				questsString += quest.text + "\n";
+
+					questsString +=  "\n" + quest.text;
+
 			} else {
-				questsString += "<color=#" + color + ">";
-				questsString += quest.text + "\n";
-				questsString += "</color>";
+
+					questsString += "<color=#" + color + ">";
+					questsString +=  "\n" + quest.text;
+					questsString += "</color>";
+
 			}
 		}
 		

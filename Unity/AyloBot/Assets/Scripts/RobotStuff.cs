@@ -58,6 +58,13 @@ public class RobotStuff
 			}
 		}
 
+		//Skynet Test
+		else if (command.Is ("skynet")) {
+			Debug.Log("Skynet is online");
+			Constants.skyNetMessages.SendMessage ("/say Come with me if you want to live!");
+
+		}
+
 
 		//QUEST CONTROLS-----------------------------
 		else if (command.Is ("/add quest #s"))
