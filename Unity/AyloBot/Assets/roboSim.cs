@@ -30,7 +30,9 @@ public class roboSim : MonoBehaviour {
 	//Gripper Management
 	public GameObject gripperLeft;
 	public GameObject gripperRight;
-	
+
+	/* Each gripper bit has an open and closed position stored, 
+	   and a target position which switches between the two. */
 	Vector3 leftGripperPos;
 	Vector3 leftGripClosePos;
 	Vector3 rightGripperPos;
@@ -74,6 +76,9 @@ public class roboSim : MonoBehaviour {
 
 		leftGripperRend = gripperLeft.GetComponent<Renderer> ();
 		rightGripperRend = gripperRight.GetComponent<Renderer> ();
+
+		rightGripTargetPos = rightGripperPos;
+		leftGripTargetPos = leftGripperPos;
 	
 
 	}
@@ -98,11 +103,11 @@ public class roboSim : MonoBehaviour {
 			}
 		}
 
-			gripperLeft.transform.localPosition = 
+		gripperLeft.transform.localPosition = 
 			Vector3.Lerp (gripperLeft.transform.localPosition, 
 			              leftGripTargetPos, 
 			              gripSpeed * Time.deltaTime);
-			gripperRight.transform.localPosition = 
+		gripperRight.transform.localPosition = 
 			Vector3.Lerp (gripperRight.transform.localPosition, 
 			              rightGripTargetPos, 
 			              gripSpeed * Time.deltaTime);
@@ -111,8 +116,11 @@ public class roboSim : MonoBehaviour {
 		var leftGripCur = gripperLeft.transform.localPosition;
 		var rightGripCur = gripperRight.transform.localPosition;
 
-		//if (Vector3.Distance(leftGripCur, origin) < 0.05f 
-		
+		if (Vector3.Distance (leftGripCur, leftGripTargetPos) < 0.05f || 
+		    Vector3.Distance (rightGripCur, rightGripTargetPos) < 0.05f) 
+		{
+			//Change material logic
+		}
 	}
 
 	
