@@ -109,7 +109,12 @@ public class InputData : MonoBehaviour {
 						Debug.Log (Constants.Port1);
 						textStep = -1;
 						getText = false;
-						Application.LoadLevel("runAylo");
+
+						if (Constants.telly == true) {
+							Application.LoadLevel("runTelly");
+						} else { 
+							Application.LoadLevel("runAylo");
+						}
 					}
 				}
 

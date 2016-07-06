@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
-
+using System.Collections.Generic;
 
 public class roboSim : MonoBehaviour {
 
@@ -10,9 +11,18 @@ public class roboSim : MonoBehaviour {
 	public float turnSpeed = 0.2f; //How fast do i turn?
 	public float moveSpeed = 0.2f; //How fast does it look like i move?
 
+	float[] float4Imu = {0.0f, 0.0f, 0.0f, 0.0f};
+	float[] float3Imu = {0.0f, 0.0f, 0.0f};
+
+	//Body orientaiton in meat space
+	Quaternion bodyRot;
+	Quaternion getRot;
+
 	//Global Management
 	public Material[] statusMaterials; //blue, green, yellow, red
-
+	Robot robot; //Reference to data from Robot Class
+	IDictionary<string, string> IMUData;
+	
 	//Wheel Management
 	public GameObject rightWheel;
 	public GameObject leftWheel;
@@ -47,15 +57,22 @@ public class roboSim : MonoBehaviour {
 
 	Renderer leftGripperRend;
 	Renderer rightGripperRend;
-
-
-
-
+	
 	// Use this for initialization
 	void Start () {
 
+		//Find the robot object in order to get data to run the simulation
+		if (GameObject.Find ("Robot")) {
+			robot = GameObject.Find("Robot").GetComponent<Robot>();
+		} else {
+			//Debug.Log ("RoboSim not connecting to Robot");
+		}
+
+
+
 		//Robot will be moved by acting upon a rigid body... I think : D
 		Body = robotBody.GetComponent<Rigidbody> ();
+		bodyRot = robotBody.GetComponent<Transform> ().rotation;
 
 		//Get Renderer for Left and Right Wheels
 		leftRend = leftWheel.GetComponent<Renderer> ();
@@ -83,14 +100,41 @@ public class roboSim : MonoBehaviour {
 
 	}
 
-	void moveGripper() {
 
+	
+	// Update is called once per frame
+	void Update () {
+
+			fetchIMU ();
+
+
+		moveGripper ();
+
+		if (Constants.robotLive == false) {
+			var inputSignal = simulateInput ();
+			if (inputSignal.sqrMagnitude > 0.05f * 0.05f) {
+				//Body.MovePosition(Body.position + (moveSpeed * Time.deltaTime) * inputSignal); //move in direction
+				var targetRotation = Quaternion.LookRotation (inputSignal);
+				Body.MoveRotation (Body.rotation.EaseTowards (targetRotation, turnSpeed));
+			}
+		} else {
+
+			bodyRot = Quaternion.Euler(0.0f, float3Imu[0], 0.0f);
+			Body.MoveRotation (Body.rotation.EaseTowards (bodyRot, turnSpeed));
+			//robotBody.transform.localRotation = bodyRot;
+
+
+		}
+	}
+
+	void moveGripper() {
+		
 		//Debug.Log ("Left Gripper Pos: " + leftGripperPos);
 		//Debug.Log ("Right Gripper Pos: " + rightGripperPos);
 		//Debug.Log ("Gripper Targets: " + leftGripTargetPos + " " + rightGripTargetPos);
-
+		
 		if (Input.GetKeyDown (KeyCode.G)) {
-
+			
 			if (closeGripper == false) {
 				closeGripper = true;
 				leftGripTargetPos = leftGripClosePos;
@@ -102,7 +146,7 @@ public class roboSim : MonoBehaviour {
 				closeGripper = false;
 			}
 		}
-
+		
 		gripperLeft.transform.localPosition = 
 			Vector3.Lerp (gripperLeft.transform.localPosition, 
 			              leftGripTargetPos, 
@@ -111,11 +155,11 @@ public class roboSim : MonoBehaviour {
 			Vector3.Lerp (gripperRight.transform.localPosition, 
 			              rightGripTargetPos, 
 			              gripSpeed * Time.deltaTime);
-
-
+		
+		
 		var leftGripCur = gripperLeft.transform.localPosition;
 		var rightGripCur = gripperRight.transform.localPosition;
-
+		
 		if (Vector3.Distance (leftGripCur, leftGripTargetPos) < 0.05f || 
 		    Vector3.Distance (rightGripCur, rightGripTargetPos) < 0.05f) 
 		{
@@ -123,29 +167,13 @@ public class roboSim : MonoBehaviour {
 		}
 	}
 
-	
-	// Update is called once per frame
-	void Update () {
-
-
-		var inputSignal = simulateInput ();
-		moveGripper ();
-
-
-		if (inputSignal.sqrMagnitude > 0.05f * 0.05f) {
-			//Body.MovePosition(Body.position + (moveSpeed * Time.deltaTime) * inputSignal); //move in direction
-			var targetRotation = Quaternion.LookRotation(inputSignal);
-			Body.MoveRotation(Body.rotation.EaseTowards(targetRotation, turnSpeed));
-		}
-		
-	}
 
 	Vector3 simulateInput() {
 
 		var simulateInput = new Vector3 (
 				Input.GetAxisRaw("Horizontal"),
-				Input.GetAxisRaw("Zed"),
-				Input.GetAxisRaw("Vertical")
+				Input.GetAxisRaw("Vertical"),
+				Input.GetAxisRaw("Zed")
 				);
 
 		if (Input.GetKeyDown (KeyCode.F)) {
@@ -179,6 +207,82 @@ public class roboSim : MonoBehaviour {
 		} else {
 
 			Debug.Log("We already movin yo!");
+		}
+	}
+
+	void fetchIMU () {
+		IMUData = robot.getIMUVariables();
+		if (IMUData != null) {
+
+			float qx = (float)Convert.ToDouble(IMUData["quaternion_x"]);
+			float qy = (float)Convert.ToDouble(IMUData["quaternion_y"]);
+			float qz = (float)Convert.ToDouble(IMUData["quaternion_z"]);
+			float qw = (float)Convert.ToDouble(IMUData["quaternion_w"]);
+
+			float ex = (float)Convert.ToDouble(IMUData["euler_heading"]);
+			float ey = (float)Convert.ToDouble (IMUData["euler_roll"]);
+			float ez = (float)Convert.ToDouble (IMUData["euler_pitch"]);
+
+			float[] efloat = float3Imu;
+
+			if (ex >= 0.0f) {
+				efloat[0] = ex;
+			}
+
+			if (ey >= 0.0f) {
+				efloat[1] = ey;
+			}
+
+			if (ez >= 0.0f) {
+				efloat[2] = ez;
+			}
+			
+			/*Debug.Log ("Euler Rotation - Heading:" + efloat[0] + 
+			           " Roll: " + efloat[1] + 
+			           " Pitch: " + efloat[2]);*/
+
+			float3Imu = efloat;
+
+			if (qx >= 0.0f) {
+				float4Imu[0] = qx;
+			}
+
+			if (qy >= 0.0f) {
+				float4Imu[1] = qy;
+			}
+
+			if (qz >= 0.0f) {
+				float4Imu[2] = qz;
+			}
+
+			if (qw >= 0.0f) {
+				float4Imu[3] = qw;
+			}
+
+			//Quaternion IMURot = new Quaternion(qx, qy, qz, qw);
+			//bodyRot = IMURot;
+
+
+			 getRot = new Quaternion(float4Imu[0],
+			                         float4Imu[1],
+			                         float4Imu[2],
+			                         float4Imu[3]); 
+			//getRot = new Quaternion(qx, qy, qz, qw);
+		
+
+			/*Debug.Log ("IMU = x: " + float4Imu[0] + 
+			           " y: " + float4Imu[1] +
+			           " z: " + float4Imu[2] +
+			           " w: " + float4Imu[3]);*/
+
+			foreach (KeyValuePair<string, string> entry in IMUData) {
+				//Debug.Log ("Key");
+				//Debug.Log (entry.Key);
+				//Debug.Log ("Value");
+				//Debug.Log (entry.Value);
+				}
+			} else {
+				Debug.Log("No IMU Data found");
 		}
 	}
 }

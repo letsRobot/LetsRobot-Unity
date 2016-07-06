@@ -74,7 +74,7 @@ public class skynetConnect : MonoBehaviour {
 		// so after creation it needs to hook with us
 		if (runTelly) {
 			if (GameObject.Find ("Robot")) {
-				Robot robot = GameObject.Find("Robot").GetComponent<Robot>();
+				//Robot robot = GameObject.Find("Robot").GetComponent<Robot>();
 				Constants.roboStuff.Update(variables, robotMessages);
 					foreach (var command in robotMessages.GetCommands()) {
 						Constants.roboStuff.Command (command, variables, robotMessages); 

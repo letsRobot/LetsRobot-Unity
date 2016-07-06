@@ -56,6 +56,10 @@ public class Robot : MonoBehaviour
 		UpdateHud();
 	}
 
+	public IDictionary<string, string> getIMUVariables() {
+		return variables;
+	}
+
 	void DispatchCommands()
 	{
 		foreach(var command in robotMessages.GetCommands())
