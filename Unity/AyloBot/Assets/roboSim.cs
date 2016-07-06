@@ -50,7 +50,7 @@ public class roboSim : MonoBehaviour {
 	Vector3 leftGripTargetPos;
 	Vector3 rightGripTargetPos;
 
-	public bool closeGripper = false;
+	public bool closeGrip;
 	bool triggerGrip = false;
 	public float gripperMoveDist = 1.0f;
 	public float gripSpeed = 1.0f;
@@ -80,6 +80,9 @@ public class roboSim : MonoBehaviour {
 
 
 		//Managing gripper Setup
+
+		//Get the gripper status from Constants, which is determined by the chat.
+		closeGrip = Constants.gripperClose;
 		leftGripperPos = gripperLeft.gameObject.GetComponent<Transform> ().localPosition;
 		rightGripperPos = gripperRight.gameObject.GetComponent<Transform> ().localPosition;
 
@@ -128,24 +131,22 @@ public class roboSim : MonoBehaviour {
 	}
 
 	void moveGripper() {
-		
+
+		closeGrip = Constants.gripperClose;
+
 		//Debug.Log ("Left Gripper Pos: " + leftGripperPos);
 		//Debug.Log ("Right Gripper Pos: " + rightGripperPos);
 		//Debug.Log ("Gripper Targets: " + leftGripTargetPos + " " + rightGripTargetPos);
-		
-		if (Input.GetKeyDown (KeyCode.G)) {
+
 			
-			if (closeGripper == false) {
-				closeGripper = true;
+			if (closeGrip == true) {
 				leftGripTargetPos = leftGripClosePos;
 				rightGripTargetPos = rightGripClosePos;
 				//Debug.Log("Gripper Triggered");
-			} else {
+			} else if (closeGrip == false) {
 				leftGripTargetPos = leftGripperPos;
 				rightGripTargetPos = rightGripperPos;
-				closeGripper = false;
 			}
-		}
 		
 		gripperLeft.transform.localPosition = 
 			Vector3.Lerp (gripperLeft.transform.localPosition, 
@@ -160,10 +161,13 @@ public class roboSim : MonoBehaviour {
 		var leftGripCur = gripperLeft.transform.localPosition;
 		var rightGripCur = gripperRight.transform.localPosition;
 		
-		if (Vector3.Distance (leftGripCur, leftGripTargetPos) < 0.05f || 
-		    Vector3.Distance (rightGripCur, rightGripTargetPos) < 0.05f) 
-		{
-			//Change material logic
+		if (Vector3.Distance (leftGripCur, leftGripTargetPos) > 0.05f || 
+			Vector3.Distance (rightGripCur, rightGripTargetPos) > 0.05f) {
+			leftGripperRend.sharedMaterial = statusMaterials [1];
+			rightGripperRend.sharedMaterial = statusMaterials [1];
+		} else {
+			leftGripperRend.sharedMaterial = statusMaterials[0];
+			rightGripperRend.sharedMaterial = statusMaterials[0];
 		}
 	}
 

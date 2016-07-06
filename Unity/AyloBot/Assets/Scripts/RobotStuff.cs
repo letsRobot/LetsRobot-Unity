@@ -60,9 +60,17 @@ public class RobotStuff
 
 		//Skynet Test
 		else if (command.Is ("skynet")) {
-			Debug.Log("Skynet is online");
+			Debug.Log ("Skynet is online");
 			Constants.skyNetMessages.SendMessage ("/say Come with me if you want to live!");
 
+		} else if (command.Is ("open")) {
+			Debug.Log ("Gripper is Open");
+			Constants.gripperClose = false;
+		} else if (command.Is ("close")) {
+			Debug.Log ("Gripper is Closed!");
+			Constants.gripperClose = true;
+		} else if (command.Is ("f")) {
+			//Debug.Log ("FORWARD!!!");
 		}
 
 
