@@ -217,7 +217,7 @@ public class roboSim : MonoBehaviour {
 	void fetchIMU () {
 		IMUData = robot.getIMUVariables();
 		if (IMUData != null) {
-
+			try {
 			float qx = (float)Convert.ToDouble(IMUData["quaternion_x"]);
 			float qy = (float)Convert.ToDouble(IMUData["quaternion_y"]);
 			float qz = (float)Convert.ToDouble(IMUData["quaternion_z"]);
@@ -226,6 +226,8 @@ public class roboSim : MonoBehaviour {
 			float ex = (float)Convert.ToDouble(IMUData["euler_heading"]);
 			float ey = (float)Convert.ToDouble (IMUData["euler_roll"]);
 			float ez = (float)Convert.ToDouble (IMUData["euler_pitch"]);
+
+			
 
 			float[] efloat = float3Imu;
 
@@ -271,6 +273,7 @@ public class roboSim : MonoBehaviour {
 			                         float4Imu[1],
 			                         float4Imu[2],
 			                         float4Imu[3]); 
+			} catch(KeyNotFoundException) {}
 			//getRot = new Quaternion(qx, qy, qz, qw);
 		
 
@@ -279,14 +282,14 @@ public class roboSim : MonoBehaviour {
 			           " z: " + float4Imu[2] +
 			           " w: " + float4Imu[3]);*/
 
-			foreach (KeyValuePair<string, string> entry in IMUData) {
+			//foreach (KeyValuePair<string, string> entry in IMUData) {
 				//Debug.Log ("Key");
 				//Debug.Log (entry.Key);
 				//Debug.Log ("Value");
 				//Debug.Log (entry.Value);
 				}
-			} else {
-				Debug.Log("No IMU Data found");
-		}
+			//} else {
+				//Debug.Log("No IMU Data found");
+		//}
 	}
 }
