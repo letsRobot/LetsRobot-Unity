@@ -153,6 +153,8 @@ public class Robot : MonoBehaviour
 		UpdateEcho();
 	}
 
+	
+
 	void UpdateLeds()
 	{
 		//Debug.Log ("Using Telly's Custom things, have to change values back to 0 & 16 for normal bots");
@@ -178,8 +180,13 @@ public class Robot : MonoBehaviour
 
 	void UpdateLed(int iLed, float r, float g, float b)
 	{
+
+		//For Each LED object found with this index, change the color.
 		var led = GameObject.Find("LED" + iLed).GetComponent<MeshRenderer>();
+		var simLed = GameObject.Find ("sim" + iLed).GetComponent<MeshRenderer> ();
 		led.material.color = new Color(r, g, b);
+		simLed.material.color = new Color (r, g, b);
+		
 	}
 
 	void UpdateEcho()
