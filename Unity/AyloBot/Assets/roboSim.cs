@@ -207,7 +207,6 @@ public class roboSim : MonoBehaviour {
 			rightRend.sharedMaterial = statusMaterials [0];
 			Debug.Log ("Movement Complete");
 
-			//yield return null;
 		} else {
 
 			Debug.Log("We already movin yo!");
@@ -218,62 +217,60 @@ public class roboSim : MonoBehaviour {
 		IMUData = robot.getIMUVariables();
 		if (IMUData != null) {
 			try {
-			float qx = (float)Convert.ToDouble(IMUData["quaternion_x"]);
-			float qy = (float)Convert.ToDouble(IMUData["quaternion_y"]);
-			float qz = (float)Convert.ToDouble(IMUData["quaternion_z"]);
-			float qw = (float)Convert.ToDouble(IMUData["quaternion_w"]);
+				float qx = (float)Convert.ToDouble(IMUData["quaternion_x"]);
+				float qy = (float)Convert.ToDouble(IMUData["quaternion_y"]);
+				float qz = (float)Convert.ToDouble(IMUData["quaternion_z"]);
+				float qw = (float)Convert.ToDouble(IMUData["quaternion_w"]);
 
-			float ex = (float)Convert.ToDouble(IMUData["euler_heading"]);
-			float ey = (float)Convert.ToDouble (IMUData["euler_roll"]);
-			float ez = (float)Convert.ToDouble (IMUData["euler_pitch"]);
+				float ex = (float)Convert.ToDouble(IMUData["euler_heading"]);
+				float ey = (float)Convert.ToDouble (IMUData["euler_roll"]);
+				float ez = (float)Convert.ToDouble (IMUData["euler_pitch"]);
 
-			
+				float[] efloat = float3Imu;
 
-			float[] efloat = float3Imu;
+				if (ex >= 0.0f) {
+					efloat[0] = ex;
+				}
 
-			if (ex >= 0.0f) {
-				efloat[0] = ex;
-			}
+				if (ey >= 0.0f) {
+					efloat[1] = ey;
+				}
 
-			if (ey >= 0.0f) {
-				efloat[1] = ey;
-			}
-
-			if (ez >= 0.0f) {
-				efloat[2] = ez;
-			}
+				if (ez >= 0.0f) {
+					efloat[2] = ez;
+				}
 			
 			/*Debug.Log ("Euler Rotation - Heading:" + efloat[0] + 
 			           " Roll: " + efloat[1] + 
 			           " Pitch: " + efloat[2]);*/
 
-			float3Imu = efloat;
+				float3Imu = efloat;
 
-			if (qx >= 0.0f) {
-				float4Imu[0] = qx;
-			}
+				if (qx >= 0.0f) {
+					float4Imu[0] = qx;
+				}
 
-			if (qy >= 0.0f) {
-				float4Imu[1] = qy;
-			}
+				if (qy >= 0.0f) {
+					float4Imu[1] = qy;
+				}
 
-			if (qz >= 0.0f) {
-				float4Imu[2] = qz;
-			}
+				if (qz >= 0.0f) {
+					float4Imu[2] = qz;
+				}
 
-			if (qw >= 0.0f) {
-				float4Imu[3] = qw;
-			}
+				if (qw >= 0.0f) {
+					float4Imu[3] = qw;
+				}
 
 			//Quaternion IMURot = new Quaternion(qx, qy, qz, qw);
 			//bodyRot = IMURot;
 
 
-			 getRot = new Quaternion(float4Imu[0],
+			 	getRot = new Quaternion(float4Imu[0],
 			                         float4Imu[1],
 			                         float4Imu[2],
 			                         float4Imu[3]); 
-			} catch(KeyNotFoundException) {}
+				} catch(KeyNotFoundException) {}
 			//getRot = new Quaternion(qx, qy, qz, qw);
 		
 
@@ -287,7 +284,7 @@ public class roboSim : MonoBehaviour {
 				//Debug.Log (entry.Key);
 				//Debug.Log ("Value");
 				//Debug.Log (entry.Value);
-				}
+		}
 			//} else {
 				//Debug.Log("No IMU Data found");
 		//}
