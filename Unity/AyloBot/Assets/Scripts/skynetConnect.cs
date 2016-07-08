@@ -97,6 +97,7 @@ public class skynetConnect : MonoBehaviour {
 		if (gotDevices) {
 			for (int i=0; i<devices.Count; i++) {
 				var ip = devices[i]["internalIp"];
+				Debug.Log (devices[i]);
 			}
 		}
 	}

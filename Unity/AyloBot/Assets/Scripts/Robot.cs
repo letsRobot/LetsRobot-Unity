@@ -21,16 +21,14 @@ public class Robot : MonoBehaviour
 
 	//dictionary for tracking users and assigning them colors in chat
 	Dictionary<string, string> users = new Dictionary<string, string>();
-
-
-
+	
 	void Start()
 	{
-		//newUser = false;
+
 		server = Constants.IP1;
 		robotMessages = new RobotMessages(server, port);
 		robotStuff = Constants.roboStuff;
-		//robotStuff = new RobotStuff();
+	
 		if (Telly == true) {
 			firstLED = 1;
 			lastLED = 19;
@@ -70,11 +68,8 @@ public class Robot : MonoBehaviour
 	{
 		robotMessages.SetMaximumNumberOfMessages(numberOfChatMessages);
 		var chatMessages = robotMessages.GetChatMessages();
-		//var chatMessages2 = Constants.skyNetMessages.GetChatMessages();
-
 		var chat = GameObject.Find("Chat").GetComponent<TextMesh>();
 		chat.text = "";
-
 		foreach(var message in chatMessages)
 		{
 			if(message.user == "jtv") // Ignore messages from Twitch itself.
@@ -82,21 +77,11 @@ public class Robot : MonoBehaviour
 
 			chat.text += ChatMessageToRichTextLine(message);
 		}
-		/*
-		foreach(var message in chatMessages2)
-		{
-			if(message.user == "jtv") // Ignore messages from Twitch itself.
-				continue;
-			
-			chat.text += ChatMessageToRichTextLine(message);
-		}
-		*/
 	}
 	
 	string ChatMessageToRichTextLine(RobotChatMessage message)
 	{
 		string richText = "";
-
 		string color = normalChatMessageColor;
 
 		if(message.isCommand)
@@ -147,14 +132,14 @@ public class Robot : MonoBehaviour
 		
 	}
 
+	//TODO: GetComponent should not be called during the update loop, 
+	//an instance of the LED's needs to be created first or a reference to the LEDs.
 	void UpdateHud()
 	{
 		UpdateLeds();
 		UpdateEcho();
 	}
-
 	
-
 	void UpdateLeds()
 	{
 		//Debug.Log ("Using Telly's Custom things, have to change values back to 0 & 16 for normal bots");

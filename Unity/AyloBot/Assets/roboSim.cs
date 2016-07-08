@@ -68,8 +68,6 @@ public class roboSim : MonoBehaviour {
 			//Debug.Log ("RoboSim not connecting to Robot");
 		}
 
-
-
 		//Robot will be moved by acting upon a rigid body... I think : D
 		Body = robotBody.GetComponent<Rigidbody> ();
 		bodyRot = robotBody.GetComponent<Transform> ().rotation;
@@ -80,7 +78,6 @@ public class roboSim : MonoBehaviour {
 
 
 		//Managing gripper Setup
-
 		//Get the gripper status from Constants, which is determined by the chat.
 		closeGrip = Constants.gripperClose;
 		leftGripperPos = gripperLeft.gameObject.GetComponent<Transform> ().localPosition;
@@ -99,17 +96,12 @@ public class roboSim : MonoBehaviour {
 
 		rightGripTargetPos = rightGripperPos;
 		leftGripTargetPos = leftGripperPos;
-	
-
 	}
-
-
 	
 	// Update is called once per frame
 	void Update () {
 
 			fetchIMU ();
-
 
 		moveGripper ();
 
@@ -125,8 +117,7 @@ public class roboSim : MonoBehaviour {
 			bodyRot = Quaternion.Euler(0.0f, float3Imu[0], 0.0f);
 			Body.MoveRotation (Body.rotation.EaseTowards (bodyRot, turnSpeed));
 			//robotBody.transform.localRotation = bodyRot;
-
-
+		
 		}
 	}
 
@@ -156,8 +147,7 @@ public class roboSim : MonoBehaviour {
 			Vector3.Lerp (gripperRight.transform.localPosition, 
 			              rightGripTargetPos, 
 			              gripSpeed * Time.deltaTime);
-		
-		
+
 		var leftGripCur = gripperLeft.transform.localPosition;
 		var rightGripCur = gripperRight.transform.localPosition;
 		

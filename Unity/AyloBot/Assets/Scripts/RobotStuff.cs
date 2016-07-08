@@ -63,6 +63,8 @@ public class RobotStuff
 			Debug.Log ("Skynet is online");
 			Constants.skyNetMessages.SendMessage ("/say Come with me if you want to live!");
 
+
+		//SIMBOT COMMANDS FOR HUD UPDATES------------
 		} else if (command.Is ("open")) {
 			Debug.Log ("Gripper is Open");
 			Constants.gripperClose = false;
