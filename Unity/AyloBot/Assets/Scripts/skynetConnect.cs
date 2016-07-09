@@ -19,6 +19,12 @@ public class skynetConnect : MonoBehaviour {
 		//robotMessages = new RobotMessages("64.185.234.177", 40100);
 		robotMessages = Constants.skyNetMessages;
 		robotMessages.SendMessage("login letsrobot");
+
+		//robotMessages.SendMessage("parse on"); // default: skynet will parse
+		//robotMessages.SendMessage("parse off"); // unity handles parsing and cmds to robot
+		//robotMessages.SendMessage("robo on"); // default: skynet will send cmds to robots
+		//robotMessages.SendMessage("robo off"); // only works when parse is on: SkyNet parses but lets Unity send cmds to robot
+
 		//running = true;
 		refreshDevices();
 
@@ -65,8 +71,8 @@ public class skynetConnect : MonoBehaviour {
 			gotDevices=true;
 
 			// EXAMPLE, connect to first bot on the list
-			Debug.Log("connecting to "+devices[0]["internalIp"]);
-			SelectDevice(devices[0]["internalIp"]);
+			Debug.Log("connecting to "+devices[1]["internalIp"]);
+			SelectDevice(devices[1]["internalIp"]);
 			// END EXAMPLE
 		}
 		// unity "Robot" object may or may not be created yet
@@ -97,7 +103,7 @@ public class skynetConnect : MonoBehaviour {
 		if (gotDevices) {
 			for (int i=0; i<devices.Count; i++) {
 				var ip = devices[i]["internalIp"];
-				Debug.Log (devices[i]);
+				Debug.Log (ip[i]);
 			}
 		}
 	}

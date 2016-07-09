@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SimpleJSON;
 
 public struct RobotChatMessage
 {
@@ -64,54 +65,69 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 		Tokenizer tokenizer = new Tokenizer(message, ' ');
 
 		var messageType = tokenizer.GetToken();
+		//UnityEngine.Debug.Log (messageType);
 
-		if(messageType == "chat")
-		{
-			var user        = tokenizer.GetToken();
-			var chatMessage = tokenizer.GetString();
+		if (messageType == "chat") {
+			var user = tokenizer.GetToken ();
+			var chatMessage = tokenizer.GetString ();
 
-			AddMessage(new InternalRobotMessage(user, chatMessage));
+			AddMessage (new InternalRobotMessage (user, chatMessage));
+		} else if (messageType == "command") {
+			var isFromChat = tokenizer.GetToken () == "from_chat";
+			var user = tokenizer.GetToken ();
+			var commandId = Convert.ToInt32 (tokenizer.GetToken ());
+			var commandDescriptionSize = Convert.ToInt32 (tokenizer.GetToken ());
+			var commandDescription = tokenizer.GetString (commandDescriptionSize);
+			var command = tokenizer.GetString ();
+
+			var internalRobotMessage = new InternalRobotMessage (user, command, commandDescription, commandId);
+
+			AddCommand (internalRobotMessage);
+
+			if (isFromChat)
+				AddMessage (internalRobotMessage);
+		} else if (messageType == "command_begin") {
+			var commandId = Convert.ToInt32 (tokenizer.GetToken ());
+
+			SetCommandIsExecuting (commandId, true);
+		} else if (messageType == "command_end") {
+			var commandId = Convert.ToInt32 (tokenizer.GetToken ());
+
+			SetCommandIsExecuting (commandId, false);
+		} else if (messageType == "variable") {
+			var variable = tokenizer.GetToken ();
+			var value = tokenizer.GetString ();
+
+			SetVariable (variable, value);
+		} else if (messageType == "parse") { 
+			//UnityEngine.Debug.Log ("parsing");
+			var from = tokenizer.GetToken();
+			var privilegeLevel = Convert.ToInt32(tokenizer.GetToken());
+			var platform = tokenizer.GetToken();
+			var msg = tokenizer.GetString();
+			UnityEngine.Debug.Log (from);
+			UnityEngine.Debug.Log (privilegeLevel);
+			UnityEngine.Debug.Log (platform);
+			UnityEngine.Debug.Log (msg);
+			//UnityEngine.Debug.Log ("done parsing");
 		}
-
-		else if(messageType == "command")
-		{
-			var isFromChat             = tokenizer.GetToken() == "from_chat";
-			var user                   = tokenizer.GetToken();
-			var commandId              = Convert.ToInt32(tokenizer.GetToken());
-			var commandDescriptionSize = Convert.ToInt32(tokenizer.GetToken());
-			var commandDescription     = tokenizer.GetString(commandDescriptionSize);
-			var command                = tokenizer.GetString();
-
-			var internalRobotMessage = new InternalRobotMessage(user, command, commandDescription, commandId);
-
-			AddCommand(internalRobotMessage);
-
-			if(isFromChat)
-				AddMessage(internalRobotMessage);
+		else if(messageType == "run")
+		{ 
+			//UnityEngine.Debug.Log ("run");
+			var json = tokenizer.GetString ();
+			//Debug.Log(json);
+			var packet=JSON.Parse(json);
+			// packet["type"] = motor, led, sendCommandMessage
+			// packet["from"] = user that typed it
+			// packet["text"] = what they typed
+			// packet["i"] = which led
+			// packet["r"] = red
+			// packet["g"] = green
+			// packet["b"] = blue
+			UnityEngine.Debug.Log(packet["type"]);
+			//UnityEngine.Debug.Log(packet["text"]);
+			//UnityEngine.Debug.Log ("done run");
 		}
-
-		else if(messageType == "command_begin")
-		{
-			var commandId = Convert.ToInt32(tokenizer.GetToken());
-
-			SetCommandIsExecuting(commandId, true);
-		}
-
-		else if(messageType == "command_end")
-		{
-			var commandId = Convert.ToInt32(tokenizer.GetToken());
-
-			SetCommandIsExecuting(commandId, false);
-		}
-
-		else if(messageType == "variable")
-		{
-			var variable = tokenizer.GetToken();
-			var value    = tokenizer.GetString();
-
-			SetVariable(variable, value);
-		}
-
 		else if(messageType == "hello")
 		{ }
 
