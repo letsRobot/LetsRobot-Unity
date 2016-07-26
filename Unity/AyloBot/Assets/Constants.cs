@@ -29,7 +29,7 @@ public static class Constants {
 
 	//Robot stuff
 	public static bool telly = true;
-	public static bool robotLive = true;
+	public static bool robotLive = false;
 	public static bool gripperClose = true;
 }
 

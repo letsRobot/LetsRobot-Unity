@@ -101,10 +101,7 @@ public class roboSim : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-			fetchIMU ();
-
-		moveGripper ();
-
+		//Simulate input if the robot is not live to help with testing
 		if (Constants.robotLive == false) {
 			var inputSignal = simulateInput ();
 			if (inputSignal.sqrMagnitude > 0.05f * 0.05f) {
@@ -114,6 +111,9 @@ public class roboSim : MonoBehaviour {
 			}
 		} else {
 
+			//Get variables from the robot / skynet if the robot is live.
+			moveGripper ();
+			fetchIMU ();
 			bodyRot = Quaternion.Euler(0.0f, float3Imu[0], 0.0f);
 			Body.MoveRotation (Body.rotation.EaseTowards (bodyRot, turnSpeed));
 			//robotBody.transform.localRotation = bodyRot;
@@ -121,6 +121,7 @@ public class roboSim : MonoBehaviour {
 		}
 	}
 
+	//Logic for moving the gripper graphic on the robot sim.
 	void moveGripper() {
 
 		closeGrip = Constants.gripperClose;
@@ -161,7 +162,7 @@ public class roboSim : MonoBehaviour {
 		}
 	}
 
-
+	//Simulate input when the robot is not live.
 	Vector3 simulateInput() {
 
 		var simulateInput = new Vector3 (
@@ -182,6 +183,20 @@ public class roboSim : MonoBehaviour {
 			StartCoroutine("moveDuration");
 
 		}
+
+		if (Input.GetKeyDown (KeyCode.O)) {
+			if (Constants.gripperClose == true) {
+				Constants.gripperClose = false;
+
+
+			} else if (Constants.gripperClose == false) {
+			
+				Constants.gripperClose = true;
+			}
+
+		}
+
+		moveGripper();
 		return simulateInput;
 	}
 

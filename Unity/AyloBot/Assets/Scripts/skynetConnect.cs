@@ -63,7 +63,7 @@ public class skynetConnect : MonoBehaviour {
 				device["last"]=deviceList[i]["last"];
 				device["mac"]=deviceList[i]["mac"];
 				device["shortName"]=deviceList[i]["shortName"];
-				//Debug.Log (device);
+				Debug.Log (device);
 				devices.Add (device);
 				//devicesList[i].internalIp
 			}
@@ -71,8 +71,8 @@ public class skynetConnect : MonoBehaviour {
 			gotDevices=true;
 
 			// EXAMPLE, connect to first bot on the list
-			Debug.Log("connecting to "+devices[1]["internalIp"]);
-			SelectDevice(devices[1]["internalIp"]);
+			Debug.Log("connecting to "+devices[0]["internalIp"]);
+			SelectDevice(devices[0]["internalIp"]);
 			// END EXAMPLE
 		}
 		// unity "Robot" object may or may not be created yet
@@ -95,6 +95,7 @@ public class skynetConnect : MonoBehaviour {
 		Constants.IP1 = IP;
 		robotMessages.SendMessage ("iam " + IP);
 		runTelly = true;
+		Constants.robotLive = true; //Send status that the robot is now live.
 		Application.LoadLevel ("runTelly");
 
 	}
