@@ -12,11 +12,13 @@ public class skynetConnect : MonoBehaviour {
 	IDictionary<string, string> variables;
 	IList<IDictionary<string, string>> devices;
 	bool runTelly=false;
+	public TextMesh rlog;
+	JSONNode deviceList;
+	int countDevices = -1;
 
 	// Use this for initialization
 	void Start () {
-		Debug.Log("Starting up skynet");
-		//robotMessages = new RobotMessages("64.185.234.177", 40100);
+		rlog.text += "Loading...";
 		robotMessages = Constants.skyNetMessages;
 		robotMessages.SendMessage("login letsrobot");
 
@@ -27,6 +29,7 @@ public class skynetConnect : MonoBehaviour {
 
 		//running = true;
 		refreshDevices();
+		rlog.text = "Ready to look for robots \n";
 
 	}
 
@@ -42,37 +45,54 @@ public class skynetConnect : MonoBehaviour {
 		robotMessages.Stop();
 	}
 
+	void checkForRobots() {
+
+	}
+
 	// Update is called once per frame
 	void Update () {
-		//if (!running) return;
-		//robotMessages.SetServer(IP1, 40100);
+
 		variables = robotMessages.GetVariables();
 		if (variables.ContainsKey("devices") && !gotDevices) {
 			//Debug.Log("got devices");
 			devices=new List<IDictionary<string, string>>();
 			//Debug.Log(variables["devices"]);
-			var deviceList=JSON.Parse(variables["devices"]);
-			Debug.Log("There are "+deviceList.Count+" devices connected");
-			for(int i=0; i<deviceList.Count; i++) {
-				//Debug.Log("got device");
-				//Debug.Log (deviceList[i]);
-				//new Dictionary<string, string>(variables);
-				var device=new Dictionary<string, string>();
-				device["internalIp"]=deviceList[i]["internalIp"];
-				device["botVersion"]=deviceList[i]["botVersion"];
-				device["last"]=deviceList[i]["last"];
-				device["mac"]=deviceList[i]["mac"];
-				device["shortName"]=deviceList[i]["shortName"];
-				Debug.Log (device);
-				devices.Add (device);
-				//devicesList[i].internalIp
+			deviceList=JSON.Parse(variables["devices"]);
+			if (deviceList.Count != countDevices) {
+				rlog.text += ("There are ") + deviceList.Count+ (" devices connected \n");
+				countDevices = deviceList.Count;
 			}
-			//Debug.Log (devices);
-			gotDevices=true;
 
-			// EXAMPLE, connect to first bot on the list
-			Debug.Log("connecting to "+devices[0]["internalIp"]);
-			SelectDevice(devices[0]["internalIp"]);
+			if (deviceList.Count != 0) {
+				for(int i=0; i<deviceList.Count; i++) {
+					//Debug.Log("got device");
+					//Debug.Log (deviceList[i]);
+					//new Dictionary<string, string>(variables);
+					var device=new Dictionary<string, string>();
+					device["internalIp"]=deviceList[i]["internalIp"];
+					device["botVersion"]=deviceList[i]["botVersion"];
+					device["last"]=deviceList[i]["last"];
+					device["mac"]=deviceList[i]["mac"];
+					device["shortName"]=deviceList[i]["shortName"];
+					Debug.Log (device);
+					devices.Add (device);
+					//devicesList[i].internalIp
+
+					gotDevices=true;
+					rlog.text += "Robots Found... Getting Info \n";
+					rlog.text += devices[i]["shortName"] + ("\n");
+					rlog.text += ("IP: ") + devices[0]["internalIp"] + ("\n \n");
+				}
+
+			} else {
+				rlog.text += "No robots found, still looking... \n";
+			}
+
+			if (deviceList.Count >= 1) {
+				//Right now, this just goes with the first robot in the list.
+				rlog.text += ("connecting to ") + devices[0]["internalIp"] + ("\n");
+				SelectDevice(devices[0]["internalIp"]);
+			}
 			// END EXAMPLE
 		}
 		// unity "Robot" object may or may not be created yet
@@ -91,6 +111,7 @@ public class skynetConnect : MonoBehaviour {
 			}
 		}
 
+	//Picks the robot we are using for this session.
 	void SelectDevice(string IP) {
 		Constants.IP1 = IP;
 		robotMessages.SendMessage ("iam " + IP);
