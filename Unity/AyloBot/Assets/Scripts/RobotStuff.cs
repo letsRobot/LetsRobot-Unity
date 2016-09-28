@@ -34,14 +34,30 @@ public class RobotStuff
 		}
 
 
+		//These are feedback variables from Skynet which are used to update the HUD
+		if (variables.ContainsKey("skynet_var_pan")) {
+			//Debug.Log (variables["skynet_var_pan"]);
+			string showPan = variables["skynet_var_pan"];
+			int.TryParse(showPan, out Constants.headPan);
+		}
 
-		Debug.Log (variables["skynet_var_pan"]);
-		string showPan = variables["skynet_var_pan"];
-		int.TryParse(showPan, out Constants.headPan);
+		if (variables.ContainsKey("skynet_var_tilt")) {
+			//Debug.Log (variables["skynet_var_tilt"]);
+			string showTilt = variables["skynet_var_tilt"];
+			int.TryParse(showTilt, out Constants.headTilt);
+		}
 
-		Debug.Log (variables["skynet_var_tilt"]);
-		string showTilt = variables["skynet_var_tilt"];
-		int.TryParse(showTilt, out Constants.headTilt);
+		if (variables.ContainsKey("skynet_var_pen_x")) {
+			//Debug.Log (variables["skynet_var_pen_x"]);
+			string showPenX = variables["skynet_var_pen_x"];
+			int.TryParse(showPenX, out Constants.penX);
+		}
+
+		if (variables.ContainsKey("skynet_var_pen_y")) {
+			//Debug.Log (variables["skynet_var_pen_y"]);
+			string showPenY = variables["skynet_var_pen_y"];
+			int.TryParse(showPenY, out Constants.penY);
+		}
 
 	}
 

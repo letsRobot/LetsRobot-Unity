@@ -27,12 +27,12 @@ public static class Constants {
 	public static bool gameOver = false;
 	public static bool updateGameOver = false;
 
-	//Robot stuff
+	public static bool showVariables = false;
+
+	//Robot Variables
 	public static bool telly = true;
 	public static bool robotLive = false;
 	public static bool gripperClose = true;
-	
-	//Robot Variables-------------------------------------------
 
 	public static string robotName = "";
 
@@ -44,6 +44,11 @@ public static class Constants {
 
 	public static int headPan;
 	public static int headTilt;
+
+	public static int penX;
+	public static int penY;
+	public static int penZ;
+
 
 
 	
