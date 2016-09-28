@@ -186,10 +186,9 @@ public class roboSim : MonoBehaviour {
 	void moveHead () {
 
 
-		if (Constants.robotLive == true) {
+		if (Constants.robotLive == true && Constants.panTiltEnabled == true) {
 			panHead = (float)Constants.headPan;
 			tiltHead = (float)Constants.headTilt;
-			//
 			panHead += panOffset;
 			tiltHead += tiltOffset;
 		}

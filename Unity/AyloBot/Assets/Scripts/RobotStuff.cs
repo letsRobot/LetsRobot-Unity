@@ -39,6 +39,7 @@ public class RobotStuff
 			//Debug.Log (variables["skynet_var_pan"]);
 			string showPan = variables["skynet_var_pan"];
 			int.TryParse(showPan, out Constants.headPan);
+			Constants.panTiltEnabled = true;
 		}
 
 		if (variables.ContainsKey("skynet_var_tilt")) {
@@ -51,6 +52,7 @@ public class RobotStuff
 			//Debug.Log (variables["skynet_var_pen_x"]);
 			string showPenX = variables["skynet_var_pen_x"];
 			int.TryParse(showPenX, out Constants.penX);
+			Constants.penEnabled = true;
 		}
 
 		if (variables.ContainsKey("skynet_var_pen_y")) {

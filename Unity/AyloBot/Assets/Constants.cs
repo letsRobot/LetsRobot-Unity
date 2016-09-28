@@ -42,9 +42,11 @@ public static class Constants {
 	public static Quaternion imuQuaternion;
 	public static float imuTemp = 0.0f;
 
+	public static bool panTiltEnabled = false;
 	public static int headPan;
 	public static int headTilt;
 
+	public static bool penEnabled = false;
 	public static int penX;
 	public static int penY;
 	public static int penZ;

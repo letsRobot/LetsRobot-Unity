@@ -26,16 +26,22 @@ public class showRobotVariables : MonoBehaviour {
 		rPrint += ("X: ") + Constants.imuEuler.x + ("\n");
 		rPrint += ("Y: ") + Constants.imuEuler.y + ("\n");
 		rPrint += ("Z: ") + Constants.imuEuler.z + ("\n \n");
-	
-		rPrint += ("Pan Head: ") + Constants.headPan + ("\n");
-		rPrint += ("Tilt Head: ") + Constants.headTilt + ("\n\n");
 
-		rPrint += ("Pen X: ") + Constants.penX + ("\n");
-		rPrint += ("Pen Y: ") + Constants.penY + ("\n");
+		if (Constants.panTiltEnabled == true) {
+			rPrint += ("Pan Head: ") + Constants.headPan + ("\n");
+			rPrint += ("Tilt Head: ") + Constants.headTilt + ("\n\n");
+		}
+
+		if (Constants.penEnabled == true) {
+			rPrint += ("Pen X: ") + Constants.penX + ("\n");
+			rPrint += ("Pen Y: ") + Constants.penY + ("\n");
+		}
 
 		rLogMesh.text = rPrint;
 		rPrint = "";
 
+
+		//Toggle robot variables on and off for the  main HUD
 		if (Input.GetKeyDown(KeyCode.Alpha0) && Constants.showVariables == true) {
 				Constants.showVariables = false;
 		} else if (Input.GetKeyDown(KeyCode.Alpha0) && Constants.showVariables == false) { 
