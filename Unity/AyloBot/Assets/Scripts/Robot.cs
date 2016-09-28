@@ -58,6 +58,14 @@ public class Robot : MonoBehaviour
 		return variables;
 	}
 
+	public IDictionary<string, string> skynet_var_pan() {
+		return variables;
+	}
+
+	public IDictionary<string, string> skynet_var_tilt() {
+		return variables;
+	}
+
 	void DispatchCommands()
 	{
 		foreach(var command in robotMessages.GetCommands())

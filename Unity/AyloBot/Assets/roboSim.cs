@@ -16,12 +16,13 @@ public class roboSim : MonoBehaviour {
 
 	//Body orientaiton in meat space
 	Quaternion bodyRot;
-	Quaternion getRot;
+
 
 	//Global Management
 	public Material[] statusMaterials; //blue, green, yellow, red
 	Robot robot; //Reference to data from Robot Class
 	IDictionary<string, string> IMUData;
+	IDictionary<string, string> panData;
 	
 	//Wheel Management
 	public GameObject rightWheel;
@@ -114,11 +115,13 @@ public class roboSim : MonoBehaviour {
 			//Get variables from the robot / skynet if the robot is live.
 			moveGripper ();
 			fetchIMU ();
-			bodyRot = Quaternion.Euler(0.0f, float3Imu[0], 0.0f);
+			bodyRot = Quaternion.Euler(0.0f, Constants.imuEuler.z, 0.0f);
 			Body.MoveRotation (Body.rotation.EaseTowards (bodyRot, turnSpeed));
 			//robotBody.transform.localRotation = bodyRot;
 		
 		}
+
+		moveHead();
 	}
 
 	//Logic for moving the gripper graphic on the robot sim.
@@ -162,7 +165,58 @@ public class roboSim : MonoBehaviour {
 		}
 	}
 
-	//Simulate input when the robot is not live.
+
+	//MANAGE HEAD MOVEMENT ----------------------------------------------------------
+	//values for pan and tilt, in degrees. 0 is center position by default.
+	public float panHead = 0; 
+	public float tiltHead = 0;
+	
+	public GameObject panner; //game object to apply pan transforms to
+	public GameObject tilter; //game object to apply tilt transforms to
+
+	public float panOffset = -90.0f; //Pan Calibration values
+	public float tiltOffset = -120.0f; //Tilt Calibration values
+	
+	public float panTiltSpeed = 10.0f;
+
+	void startHead() {
+
+	}
+	
+	void moveHead () {
+
+
+		if (Constants.robotLive == true) {
+			panHead = (float)Constants.headPan;
+			tiltHead = (float)Constants.headTilt;
+			//
+			panHead += panOffset;
+			tiltHead += tiltOffset;
+		}
+
+		//Get current rotation, and create variable for target rotation.
+		var panRotCur = panner.gameObject.transform.localRotation;
+		Quaternion panTo = Quaternion.Euler(panRotCur.eulerAngles.x, panHead, panRotCur.eulerAngles.z);
+		var tiltRotCur = tilter.gameObject.transform.localRotation;
+		Quaternion tiltTo = Quaternion.Euler(tiltHead, tiltRotCur.y, tiltRotCur.z);
+
+
+		//Pan head to target.
+		if (panRotCur.y != panTo.y ) {
+
+			panner.transform.localRotation = Quaternion.Slerp(panRotCur, panTo, panTiltSpeed *Time.deltaTime);
+			Debug.Log ("Pan thing is panning the thing");
+		}
+
+		//Tilt head to target.
+		if (tiltRotCur.x != tiltTo.x) {
+
+			tilter.transform.localRotation = Quaternion.Slerp (tiltRotCur, tiltTo, panTiltSpeed * Time.deltaTime);
+			Debug.Log ("Tilt thing is tilting the thing");
+		}
+	}
+
+	//Simulate input when the robot is not live.-----------------------------------
 	Vector3 simulateInput() {
 
 		var simulateInput = new Vector3 (
@@ -227,6 +281,34 @@ public class roboSim : MonoBehaviour {
 				float qz = (float)Convert.ToDouble(IMUData["quaternion_z"]);
 				float qw = (float)Convert.ToDouble(IMUData["quaternion_w"]);
 
+
+				if (qx >= 0.0f) {
+					float4Imu[0] = qx;
+				}
+				
+				if (qy >= 0.0f) {
+					float4Imu[1] = qy;
+				}
+				
+				if (qz >= 0.0f) {
+					float4Imu[2] = qz;
+				}
+				
+				if (qw >= 0.0f) {
+					float4Imu[3] = qw;
+				}
+
+				//Would prefer to use this method, but it needs some filtering.
+				Constants.imuQuaternion = new Quaternion(qx, qy, qz, qw);
+
+				//This method reduces some noise, but doesn't really solve the problem.
+				//Constants.imuQuaternion = new Quaternion(float4Imu[0],
+				                                         //float4Imu[1],
+				                                         //float4Imu[2],
+				                                         //float4Imu[3]);
+
+				Constants.imuEuler = Constants.imuQuaternion.eulerAngles;
+
 				float ex = (float)Convert.ToDouble(IMUData["euler_heading"]);
 				float ey = (float)Convert.ToDouble (IMUData["euler_roll"]);
 				float ez = (float)Convert.ToDouble (IMUData["euler_pitch"]);
@@ -266,32 +348,22 @@ public class roboSim : MonoBehaviour {
 				if (qw >= 0.0f) {
 					float4Imu[3] = qw;
 				}
-
-			//Quaternion IMURot = new Quaternion(qx, qy, qz, qw);
-			//bodyRot = IMURot;
-
-
-			 	getRot = new Quaternion(float4Imu[0],
-			                         float4Imu[1],
-			                         float4Imu[2],
-			                         float4Imu[3]); 
+ 
 				} catch(KeyNotFoundException) {}
-			//getRot = new Quaternion(qx, qy, qz, qw);
-		
 
-			/*Debug.Log ("IMU = x: " + float4Imu[0] + 
-			           " y: " + float4Imu[1] +
-			           " z: " + float4Imu[2] +
-			           " w: " + float4Imu[3]);*/
-
-			//foreach (KeyValuePair<string, string> entry in IMUData) {
-				//Debug.Log ("Key");
-				//Debug.Log (entry.Key);
-				//Debug.Log ("Value");
-				//Debug.Log (entry.Value);
+			//debugIMUData();
+			} else {
+				Debug.Log("No IMU Data found");
 		}
-			//} else {
-				//Debug.Log("No IMU Data found");
-		//}
+	}
+
+	void debugIMUData () {
+
+		foreach (KeyValuePair<string, string> entry in IMUData) {
+			Debug.Log ("Key");
+			Debug.Log (entry.Key);
+			Debug.Log ("Value");
+			Debug.Log (entry.Value);
+		}
 	}
 }

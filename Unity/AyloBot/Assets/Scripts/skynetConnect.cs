@@ -166,20 +166,25 @@ public class skynetConnect : MonoBehaviour {
 			pickRobot = 1;
 			Debug.Log ("Thing is pressed yo");
 			SelectDevice(devices[0]["internalIp"]);
+			Constants.robotName = devices[0]["shortName"];
+
 		} else if (Input.GetKey (KeyCode.Alpha2) && devices[1] != null) {
 			pickRobot = 2;
 			cLog += ("Picking Robot # ") + pickRobot;
 			SelectDevice(devices[1]["internalIp"]);
+			Constants.robotName = devices[1]["shortName"];
 
 		} else if (Input.GetKey (KeyCode.Alpha3) && devices[2] != null) {
 			pickRobot = 3;
 			cLog += ("Picking Robot # ") + pickRobot;
 			SelectDevice(devices[2]["internalIp"]);
+			Constants.robotName = devices[2]["shortName"];
 			
 		}else if (Input.GetKey (KeyCode.Alpha4) && devices[3] != null) {
 			pickRobot = 4;
 			cLog += ("Picking Robot # ") + pickRobot;
 			SelectDevice(devices[3]["internalIp"]);
+			Constants.robotName = devices[3]["shortName"];
 			
 		}
 	}

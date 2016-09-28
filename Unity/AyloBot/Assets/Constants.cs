@@ -31,5 +31,21 @@ public static class Constants {
 	public static bool telly = true;
 	public static bool robotLive = false;
 	public static bool gripperClose = true;
+	
+	//Robot Variables-------------------------------------------
+
+	public static string robotName = "";
+
+	//IMU Variables
+	public static Vector3 imuEuler;
+	//Try converting the quaternion to Euler instead of using the Eulers from the IMU...
+	public static Quaternion imuQuaternion;
+	public static float imuTemp = 0.0f;
+
+	public static int headPan;
+	public static int headTilt;
+
+
+	
 }
 

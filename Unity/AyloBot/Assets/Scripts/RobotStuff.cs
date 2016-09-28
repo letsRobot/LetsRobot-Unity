@@ -29,8 +29,20 @@ public class RobotStuff
 		earthquaker.Update();
 
 		// A simple example of how to have the Pi program display information from the Unity program.
-		if(Input.GetKeyDown(KeyCode.A))
+		if(Input.GetKeyDown(KeyCode.A)) {
 			robot.SendMessage("/print The A key was pressed in Unity.");
+		}
+
+
+
+		Debug.Log (variables["skynet_var_pan"]);
+		string showPan = variables["skynet_var_pan"];
+		int.TryParse(showPan, out Constants.headPan);
+
+		Debug.Log (variables["skynet_var_tilt"]);
+		string showTilt = variables["skynet_var_tilt"];
+		int.TryParse(showTilt, out Constants.headTilt);
+
 	}
 
 	// This function is called every time a command is received from the robot.
