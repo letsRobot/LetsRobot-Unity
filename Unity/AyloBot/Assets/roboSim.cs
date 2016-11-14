@@ -204,14 +204,14 @@ public class roboSim : MonoBehaviour {
 		if (panRotCur.y != panTo.y ) {
 
 			panner.transform.localRotation = Quaternion.Slerp(panRotCur, panTo, panTiltSpeed *Time.deltaTime);
-			Debug.Log ("Pan thing is panning the thing");
+			//Debug.Log ("Pan thing is panning the thing");
 		}
 
 		//Tilt head to target.
 		if (tiltRotCur.x != tiltTo.x) {
 
 			tilter.transform.localRotation = Quaternion.Slerp (tiltRotCur, tiltTo, panTiltSpeed * Time.deltaTime);
-			Debug.Log ("Tilt thing is tilting the thing");
+			//Debug.Log ("Tilt thing is tilting the thing");
 		}
 	}
 
