@@ -32,6 +32,10 @@ public class technicalDifficulties : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.G)) {
 			Constants.updateGameOver = true;
 		}
+
+		if (Input.GetKeyDown (KeyCode.Q)) {
+			Constants.triggerGlitch = true;
+		}
 	}
 	
 	// Update is called once per frame

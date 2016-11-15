@@ -88,10 +88,21 @@ public class RobotStuff
 			}
 		}
 
+		//GLITCH
+		else if (command.Is ("/glitch")) {
+			Constants.triggerGlitch = true;
+			Debug.Log("Glitchin Out Yo");
+		}
+
 		//Skynet Test
 		else if (command.Is ("skynet")) {
 			Debug.Log ("Skynet is online");
 			Constants.skyNetMessages.SendMessage ("/say Come with me if you want to live!");
+
+		//ADMIN CONTROLS
+			//CHAT
+		} else if (command.Is ("/chat")) {
+			Debug.Log("Chat is toggled");
 
 
 		//SIMBOT COMMANDS FOR HUD UPDATES------------

@@ -27,6 +27,9 @@ public static class Constants {
 	public static bool gameOver = false;
 	public static bool updateGameOver = false;
 
+	public static bool glitching = false;
+	public static bool triggerGlitch = false;
+
 	public static bool showVariables = false;
 
 	//Robot Variables

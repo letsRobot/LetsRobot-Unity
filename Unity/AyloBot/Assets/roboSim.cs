@@ -100,6 +100,7 @@ public class roboSim : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
+	float updateDir = 0.0f;
 	void Update () {
 
 		//Simulate input if the robot is not live to help with testing
@@ -115,7 +116,13 @@ public class roboSim : MonoBehaviour {
 			//Get variables from the robot / skynet if the robot is live.
 			moveGripper ();
 			fetchIMU ();
-			bodyRot = Quaternion.Euler(0.0f, Constants.imuEuler.z, 0.0f);
+
+			//Trying to smooth out some botched IMU data. This is just a bandaid! 
+			if (Constants.imuEuler.z >= 0.0f && Constants.imuEuler.z <= 360.0f) {
+				updateDir = Constants.imuEuler.z;
+			}
+
+			bodyRot = Quaternion.Euler(0.0f, updateDir, 0.0f);
 			Body.MoveRotation (Body.rotation.EaseTowards (bodyRot, turnSpeed));
 			//robotBody.transform.localRotation = bodyRot;
 		
@@ -271,42 +278,51 @@ public class roboSim : MonoBehaviour {
 		}
 	}
 
+
+	float qx = 0.0f;
+	float qy = 0.0f;
+	float qz = 0.0f;
+	float qw = 0.0f;
+
+	float sqx = 0.0f;
+	float sqy = 0.0f;
+	float sqz = 0.0f;
+	float sqw = 0.0f;
+
 	void fetchIMU () {
 		IMUData = robot.getIMUVariables();
 		if (IMUData != null) {
 			try {
-				float qx = (float)Convert.ToDouble(IMUData["quaternion_x"]);
-				float qy = (float)Convert.ToDouble(IMUData["quaternion_y"]);
-				float qz = (float)Convert.ToDouble(IMUData["quaternion_z"]);
-				float qw = (float)Convert.ToDouble(IMUData["quaternion_w"]);
+
+				sqx = qx; sqy = qy; sqz = qz; sqw = qw;
+
+				qx = (float)Convert.ToDouble(IMUData["quaternion_x"]);
+				qy = (float)Convert.ToDouble(IMUData["quaternion_y"]);
+				qz = (float)Convert.ToDouble(IMUData["quaternion_z"]);
+				qw = (float)Convert.ToDouble(IMUData["quaternion_w"]);
 
 
-				if (qx >= 0.0f) {
+
+				if (qx >= 0.0f && qx <= 1.0f && qx != sqx + sqx) {
 					float4Imu[0] = qx;
 				}
 				
-				if (qy >= 0.0f) {
+				if (qy >= 0.0f && qy <= 1.0f && qy != sqy + sqy) {
 					float4Imu[1] = qy;
 				}
 				
-				if (qz >= 0.0f) {
+				if (qz >= 0.0f && qz <= 1.0f && qz != sqz + sqz) {
 					float4Imu[2] = qz;
 				}
 				
-				if (qw >= 0.0f) {
+				if (qw >= 0.0f && qw <= 1.0f && qw != sqw + sqw) {
 					float4Imu[3] = qw;
 				}
 
 				//Would prefer to use this method, but it needs some filtering.
 				Constants.imuQuaternion = new Quaternion(qx, qy, qz, qw);
 
-				//This method reduces some noise, but doesn't really solve the problem.
-				//Constants.imuQuaternion = new Quaternion(float4Imu[0],
-				                                         //float4Imu[1],
-				                                         //float4Imu[2],
-				                                         //float4Imu[3]);
-
-				Constants.imuEuler = Constants.imuQuaternion.eulerAngles;
+				//Constants.imuEuler = Constants.imuQuaternion.eulerAngles;
 
 				float ex = (float)Convert.ToDouble(IMUData["euler_heading"]);
 				float ey = (float)Convert.ToDouble (IMUData["euler_roll"]);
@@ -325,28 +341,16 @@ public class roboSim : MonoBehaviour {
 				if (ez >= 0.0f) {
 					efloat[2] = ez;
 				}
+
+				Constants.imuEuler.x = ez;
+				Constants.imuEuler.y = ey;
+				Constants.imuEuler.z = ex; //cheap fix!
 			
 			/*Debug.Log ("Euler Rotation - Heading:" + efloat[0] + 
 			           " Roll: " + efloat[1] + 
 			           " Pitch: " + efloat[2]);*/
 
 				float3Imu = efloat;
-
-				if (qx >= 0.0f) {
-					float4Imu[0] = qx;
-				}
-
-				if (qy >= 0.0f) {
-					float4Imu[1] = qy;
-				}
-
-				if (qz >= 0.0f) {
-					float4Imu[2] = qz;
-				}
-
-				if (qw >= 0.0f) {
-					float4Imu[3] = qw;
-				}
  
 				} catch(KeyNotFoundException) {}
 
