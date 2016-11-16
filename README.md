@@ -2,7 +2,7 @@ Let's Robot
 =======
 
 This is the main public repo for all things Let's Robot. 
-The main purpose of this software is to develop an internet controlled video live-streaming robot that we are currently calling, "Tellybot". Tellybot is designed to live-stream video to various services like Twitch, Beam, and Facebook. 
+The main purpose of this software is to develop an internet controlled video live-streaming robot that we are currently calling, "Tellybot". Tellybot is designed to live-stream video to various services like Twitch, Beam, and Facebook, and execute commands given by the audience watching the stream. For instance in the case of Twitch, Telly is designed to read the chat and move forward incase someone says, "forward". 
 
 This contains several projects that are all related to Telly and involve it's various components. 
 
