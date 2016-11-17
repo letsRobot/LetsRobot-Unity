@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Text.RegularExpressions;
 
 public class Robot : MonoBehaviour
 {
@@ -108,16 +109,20 @@ public class Robot : MonoBehaviour
 		{
 			if(message.user == "jtv") // Ignore messages from Twitch itself.
 				continue;
-
 			robotChat.text += ChatMessageToRichTextLine(message);
 		}
 	}
-	
+
+
+
 	string ChatMessageToRichTextLine(RobotChatMessage message)
+
 	{
 		string richText = "";
+		string nonRichTextString = Regex.Replace(message.message, "<.*?>", string.Empty);
 		string color = normalChatMessageColor;
 
+		//Check to see if message is a command.
 		if(message.isCommand)
 			color = commandColor;
 
@@ -136,9 +141,9 @@ public class Robot : MonoBehaviour
 		richText += "<color=#" + color + ">";
 
 		if(isAction)
-			richText += message.message.Substring(chatActionPrefix.Length, message.message.Length - chatActionPrefix.Length - 1);
+			richText += nonRichTextString.Substring(chatActionPrefix.Length, nonRichTextString.Length - chatActionPrefix.Length - 1);
 		else
-			richText += message.message;
+			richText += nonRichTextString;
 
 		richText += "</color>";
 		richText += "\n";
