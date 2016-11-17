@@ -24,6 +24,7 @@ public class Robot : MonoBehaviour
 	
 	void Start()
 	{
+		startChat();
 
 		server = Constants.IP1;
 		robotMessages = new RobotMessages(server, port);
@@ -64,18 +65,51 @@ public class Robot : MonoBehaviour
 			robotStuff.Command(command, variables, robotMessages);
 	}
 
+	//CHAT STUFFS ------------------------------------------------
+	public GameObject showChat;
+	TextMesh robotChat;
+	Renderer renderChat;
+
+	//Initialize chat Stuffs
+	void startChat () {
+
+		robotChat = showChat.gameObject.GetComponent<TextMesh>();
+		renderChat = showChat.gameObject.GetComponent<Renderer>();
+
+	}
+
 	void UpdateChat() //This updates the chat every frame (not ideal)
 	{
+
+		if (Input.GetKeyDown (KeyCode.C) && Constants.triggerChat == false) {
+
+			Constants.triggerChat = true;
+
+		} 
+
+		if (Constants.triggerChat == true && Constants.showChat == true) {
+
+			renderChat.enabled = false;
+			Constants.showChat = false;
+			Constants.triggerChat = false;
+		} else if (Constants.triggerChat == true && Constants.showChat == false) {
+
+			renderChat.enabled = true;
+			Constants.showChat = true;
+			Constants.triggerChat = false;
+
+		}
+
+
 		robotMessages.SetMaximumNumberOfMessages(numberOfChatMessages);
 		var chatMessages = robotMessages.GetChatMessages();
-		var chat = GameObject.Find("Chat").GetComponent<TextMesh>();
-		chat.text = "";
+		robotChat.text = "";
 		foreach(var message in chatMessages)
 		{
 			if(message.user == "jtv") // Ignore messages from Twitch itself.
 				continue;
 
-			chat.text += ChatMessageToRichTextLine(message);
+			robotChat.text += ChatMessageToRichTextLine(message);
 		}
 	}
 	

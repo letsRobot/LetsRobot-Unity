@@ -20,6 +20,8 @@ public class glitchMe : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+
+
 		if (Constants.glitching == false && Constants.triggerGlitch == true) {
 			editAG.enabled = true;
 			editDG.enabled = true;

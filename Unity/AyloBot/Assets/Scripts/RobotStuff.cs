@@ -94,6 +94,12 @@ public class RobotStuff
 			Debug.Log("Glitchin Out Yo");
 		}
 
+		//TOGGLE CHAT
+
+		else if (command.Is ("/chat")) {
+			Constants.triggerChat = true;
+		}
+
 		//Skynet Test
 		else if (command.Is ("skynet")) {
 			Debug.Log ("Skynet is online");
