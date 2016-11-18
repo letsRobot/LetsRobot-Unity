@@ -105,10 +105,10 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 			var privilegeLevel = Convert.ToInt32(tokenizer.GetToken());
 			var platform = tokenizer.GetToken();
 			var msg = tokenizer.GetString();
-			UnityEngine.Debug.Log (from);
-			UnityEngine.Debug.Log (privilegeLevel);
-			UnityEngine.Debug.Log (platform);
-			UnityEngine.Debug.Log (msg);
+			//UnityEngine.Debug.Log (from);
+			//UnityEngine.Debug.Log (privilegeLevel);
+			//UnityEngine.Debug.Log (platform);
+			//UnityEngine.Debug.Log (msg);
 			//UnityEngine.Debug.Log ("done parsing");
 		}
 		else if(messageType == "run")
@@ -124,7 +124,7 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 			// packet["r"] = red
 			// packet["g"] = green
 			// packet["b"] = blue
-			UnityEngine.Debug.Log(packet["type"]);
+			//UnityEngine.Debug.Log(packet["type"]);
 			//UnityEngine.Debug.Log(packet["text"]);
 			//UnityEngine.Debug.Log ("done run");
 		}

@@ -82,33 +82,51 @@ public class Robot : MonoBehaviour
 	void UpdateChat() //This updates the chat every frame (not ideal)
 	{
 
-		if (Input.GetKeyDown (KeyCode.C) && Constants.triggerChat == false) {
-
-			Constants.triggerChat = true;
-
-		} 
-
+	
+		//Toggle Chat on and Off
 		if (Constants.triggerChat == true && Constants.showChat == true) {
-
 			renderChat.enabled = false;
 			Constants.showChat = false;
 			Constants.triggerChat = false;
 		} else if (Constants.triggerChat == true && Constants.showChat == false) {
-
 			renderChat.enabled = true;
 			Constants.showChat = true;
 			Constants.triggerChat = false;
-
 		}
 
+		//Show Commands Only
+		if (Constants.triggerCommandOnly == true && Constants.commandsOnly == false) {
+			Constants.triggerCommandOnly = false;
+			Constants.commandsOnly = true;
+		} else if (Constants.triggerCommandOnly == true && Constants.commandsOnly == true) {
+			Constants.triggerCommandOnly = false;
+			Constants.commandsOnly = false;
+		}
 
-		robotMessages.SetMaximumNumberOfMessages(numberOfChatMessages);
-		var chatMessages = robotMessages.GetChatMessages();
+		var numberCommandChatMessages = 0;
+		var countMessages = robotMessages.GetChatMessages();
 		robotChat.text = "";
+		foreach(var message in countMessages)
+		{
+			numberCommandChatMessages += (message.user == "jtv" || (message.isCommand == false && Constants.commandsOnly == true) ? 1 : 0);
+			//Debug.Log (numberCommandChatMessages);
+		}
+
+		if(Constants.commandsOnly) {
+				robotMessages.SetMaximumNumberOfMessages(numberCommandChatMessages + numberOfChatMessages);
+			} else {
+				robotMessages.SetMaximumNumberOfMessages(numberOfChatMessages);
+			}
+		var chatMessages = robotMessages.GetChatMessages();
+
 		foreach(var message in chatMessages)
 		{
-			if(message.user == "jtv") // Ignore messages from Twitch itself.
+			if(message.user == "jtv" || message.isCommand == false && Constants.commandsOnly == true) // Ignore messages from Twitch itself.
+			//if(message.user == "jtv") // Ignore messages from Twitch itself.
+			{
 				continue;
+			}
+				
 			robotChat.text += ChatMessageToRichTextLine(message);
 		}
 	}

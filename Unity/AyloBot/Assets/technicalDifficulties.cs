@@ -36,6 +36,16 @@ public class technicalDifficulties : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Q)) {
 			Constants.triggerGlitch = true;
 		}
+
+		if (Input.GetKeyDown (KeyCode.C) && Constants.triggerChat == false) {
+			
+			Constants.triggerChat = true;
+			
+		} 
+
+		if (Input.GetKeyDown(KeyCode.V)) {
+			Constants.triggerCommandOnly = true;
+		}
 	}
 	
 	// Update is called once per frame

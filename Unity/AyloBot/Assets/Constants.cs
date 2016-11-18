@@ -34,6 +34,8 @@ public static class Constants {
 
 	public static bool showChat = true;
 	public static bool triggerChat = false;
+	public static bool commandsOnly = false;
+	public static bool triggerCommandOnly = false;
 
 	//Robot Variables
 	public static bool telly = true;
