@@ -2,16 +2,22 @@
 using System.Collections.Generic;
 using SimpleJSON;
 
-public struct RobotChatMessage
-{
-	public string user;
-	public string message;
-	public bool isCommand;
-	public bool isExecuting;
+
+//Basic structure for elements containing a chat message
+public struct RobotChatMessage {
+
+	public string user; //user will eventually need user type
+	public string message; //message is the text input from the user, unless it's a command.
+	//TODO: messages should all be messages, except we assign a message type to them in the future.
+	public bool isCommand; //Is this message a command? 
+	public bool isExecuting; //Is it executing?
 }
 
-public struct InternalRobotMessage
-{
+//Message parameters are defined and set here to determine how they are displayed on the GUI
+public struct InternalRobotMessage {
+
+
+	//Set these values for a normal chat message.
 	public InternalRobotMessage(string user, string message)
 	{
 		this.user          = user;
@@ -23,6 +29,7 @@ public struct InternalRobotMessage
 		newMessage         = false;
 	}
 	
+	//Set these values if the message is a command
 	public InternalRobotMessage(string user, string message, string commandDescription, int commandId)
 	{
 		this.user               = user;
@@ -34,6 +41,7 @@ public struct InternalRobotMessage
 		newMessage              = false;
 	}
 	
+	//These values are set by InternalRobotMessage method above
 	public string user;
 	public string message;
 	public string commandDescription;
@@ -43,11 +51,16 @@ public struct InternalRobotMessage
 	public bool newMessage;
 };
 
+//Gets messages from another source over the network via TCP Sockets
+//Class uses RobotMessageReceiver & RobotMEssageSender interfaces from RobotConnection.cs
 public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 {
+
+	RobotConnection connection;
 	public RobotMessages(string server, int port)
 	{
-		connection = new RobotConnection(server, port, this);
+	
+		connection = new RobotConnection(server, port, this); 
 	}
 
 	public void SetServer(string server, int port)
@@ -60,18 +73,25 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 		connection.Stop();
 	}
 	
+	//Message package is assembled from string
 	public void NewMessage(string message)
 	{
 		Tokenizer tokenizer = new Tokenizer(message, ' ');
 
+		//message type is given from the broadcast source, 
+		//The broadcast source must contain a particular key / string pair for it to be picked up here.
 		var messageType = tokenizer.GetToken();
 		//UnityEngine.Debug.Log (messageType);
+		
 
 		if (messageType == "chat") {
 			var user = tokenizer.GetToken ();
 			var chatMessage = tokenizer.GetString ();
 
+			//Basic chat message generation, user + message
 			AddMessage (new InternalRobotMessage (user, chatMessage));
+
+			//command message generation, user + command, commandDescription, commandID
 		} else if (messageType == "command") {
 			var isFromChat = tokenizer.GetToken () == "from_chat";
 			var user = tokenizer.GetToken ();
@@ -84,8 +104,11 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 
 			AddCommand (internalRobotMessage);
 
+			//Admin messages are hidden from the GUI
 			if (isFromChat)
 				AddMessage (internalRobotMessage);
+
+			//handles command execution state for GUI	
 		} else if (messageType == "command_begin") {
 			var commandId = Convert.ToInt32 (tokenizer.GetToken ());
 
@@ -94,11 +117,15 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 			var commandId = Convert.ToInt32 (tokenizer.GetToken ());
 
 			SetCommandIsExecuting (commandId, false);
+
+			//Hook for setting a global variable, this is a secure message type that should only come from an admin
 		} else if (messageType == "variable") {
 			var variable = tokenizer.GetToken ();
 			var value = tokenizer.GetString ();
 
 			SetVariable (variable, value);
+
+			//This message type is a hack for Skynet for generating new message types.
 		} else if (messageType == "parse") { 
 			//UnityEngine.Debug.Log ("parsing");
 			var from = tokenizer.GetToken();
@@ -111,12 +138,14 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 			//UnityEngine.Debug.Log (msg);
 			//UnityEngine.Debug.Log ("done parsing");
 		}
+
+		//Not exactly what this does, this is a Ryan thing. - Jill
 		else if(messageType == "run")
 		{ 
 			//UnityEngine.Debug.Log ("run");
 			var json = tokenizer.GetString ();
 			//Debug.Log(json);
-			var packet=JSON.Parse(json);
+			var packet =JSON.Parse(json);
 			// packet["type"] = motor, led, sendCommandMessage
 			// packet["from"] = user that typed it
 			// packet["text"] = what they typed
@@ -132,9 +161,11 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 		{ }
 
 		else
+		//If no message types are found... 
 			throw new Exception();
 	}
 
+	int maxMessageNumber = 100;
 	public void SetMaximumNumberOfMessages(int maxMessageNumber)
 	{
 		this.maxMessageNumber = maxMessageNumber;
@@ -142,10 +173,16 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 		TrimChatMessages();
 	}
 
+	//Package up the components of the message into a List
+	//TODO: This should not be directly referencing Constants, this class should be as encapsulated as possible.
+
+	object chatMessagesLock = new object();
 	public IList<RobotChatMessage> GetChatMessages()
 	{
 		var copyOfChatMessages = new List<RobotChatMessage>();
 
+		//Note to self, Lock ensures that chatmessages cannot be updated by a separate thread while being
+		//executed by another thread.
 		lock(chatMessagesLock)
 		{
 			foreach(var message in Constants.roboStuff.chatMessages)
@@ -163,6 +200,8 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 		return copyOfChatMessages;
 	}
 
+	//Get specific variables from broadcast source related to the robot.
+	object variablesLock = new object();
 	public IDictionary<string, string> GetVariables()
 	{
 		lock(variablesLock)
@@ -171,6 +210,9 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 			return new Dictionary<string, string>(Constants.roboStuff.variables);
 		}
 	}
+
+	IList<RobotCommand> commands = new List<RobotCommand>();
+	object commandsLock  = new object();
 
 	public IList<RobotCommand> GetCommands()
 	{
@@ -242,12 +284,7 @@ public class RobotMessages : RobotMessageReceiver, RobotMessageSender
 		}
 	}
 
-	RobotConnection connection;
-	object chatMessagesLock                  = new object();
-	object commandsLock                      = new object();
-	object variablesLock                     = new object();
-	int maxMessageNumber                     = 100;
-	IList<RobotCommand> commands             = new List<RobotCommand>();
+	
 	// 20160603 rtharp
 	// moved out to RobotStuff, so we can have multiple connecctions
 	// but only one set of chat & variable
